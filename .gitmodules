@@ -1,0 +1,3 @@
+[submodule "reference/agents-from-scratch"]
+	path = reference/agents-from-scratch
+	url = https://github.com/langchain-ai/agents-from-scratch.git
