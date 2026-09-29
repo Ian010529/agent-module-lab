@@ -1,0 +1,63 @@
+# Technical Map
+
+本文件记录为了能够独立负责 AI 提效模块，需要真正掌握并在项目中验证的技术主干。
+
+状态定义：
+
+- `NOT STARTED`：尚未正式学习或实践
+- `UNDERSTANDING`：已能解释基本机制，但还未在自己的实现中完成验证
+- `PRACTICED`：已经在本项目中实际实现、测试或评测
+- `CAN EXPLAIN`：能够脱离参考答案解释设计、取舍和失败模式
+- `NOT REQUIRED NOW`：当前项目没有需求，不为了学习技术而强行引入
+
+| 技术 | 当前状态 | 当前/计划中的项目落点 |
+|---|---|---|
+| Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
+| LLM Messages / Prompt | NOT STARTED | Reply extraction |
+| Structured Output | NOT STARTED | 下一技术单元：Reply extraction |
+| Schema Validation | NOT STARTED | 下一技术单元：Reply extraction |
+| Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续 Context / Tool layer 实践 |
+| 普通函数 vs Agent Tool | UNDERSTANDING | Campaign policy 查询边界 |
+| Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
+| Stop Condition | UNDERSTANDING | 已分析 Done termination signal |
+| State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
+| State Machine / Graph | UNDERSTANDING | 已追踪 StateGraph 主链 |
+| LangGraph | UNDERSTANDING | 只理解当前参考实现；是否用于最终实现尚未决定 |
+| HITL | UNDERSTANDING | 已分析业务判断与执行审批两类 HITL |
+| Interrupt / Checkpoint / Resume | UNDERSTANDING | 已追踪参考项目暂停恢复机制 |
+| Context Minimization | UNDERSTANDING | 已确定按当前 decision 获取最少必要上下文 |
+| Business Data vs Context | UNDERSTANDING | 已通过 campaign policy / creator history 案例区分 |
+| State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
+| RAG vs Direct Lookup | UNDERSTANDING | 已确定 known-ID 结构化事实优先 API/DB |
+| Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
+| Policy Gate | NOT STARTED | 报价规则切片 |
+| Deterministic Evaluation | UNDERSTANDING | 已分析 triage exact-match 与业务规则评测 |
+| Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
+| Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
+| LLM-as-a-Judge | UNDERSTANDING | 已了解适用范围；尚未在本项目实践 |
+| Business Metrics | NOT STARTED | 模块完成后做提效对比 |
+| Timeout | NOT STARTED | Reliability slice |
+| Retry vs Replan | NOT STARTED | Reliability slice |
+| Idempotency | NOT STARTED | 外部写操作 / resume failure 场景 |
+| Duplicate Event Handling | NOT STARTED | Reliability slice |
+| Failure Recovery | NOT STARTED | HITL / tool execution slice |
+| Observability / Tracing | NOT STARTED | 集成后补充 |
+| Cost / Latency | NOT STARTED | Eval / optimization 阶段 |
+| Tool Registry / Dynamic Tool Loading | NOT REQUIRED NOW | 仅在工具规模和动态选择需求真实出现时重新评估 |
+| Multi-Agent | NOT REQUIRED NOW | 第一主项目不预设 |
+| MCP | NOT REQUIRED NOW | 第一主项目不预设 |
+| Redis / Queue | NOT REQUIRED NOW | 只有持久化、并发或异步需求证明必要时再评估 |
+
+## 当前技术单元
+
+下一步正式进入：
+
+**Structured Output + Schema Validation → Reply Extraction**
+
+完成标准不是“代码能运行”，而是至少能够：
+
+- 解释为什么该任务适合 structured output；
+- 设计输出 schema；
+- 区分模型语义提取与 deterministic validation；
+- 处理缺字段、模糊报价、格式异常等失败情况；
+- 用固定测试案例验证提取结果。

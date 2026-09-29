@@ -1,3 +1,12 @@
 [submodule "reference/agents-from-scratch"]
 	path = reference/agents-from-scratch
 	url = https://github.com/langchain-ai/agents-from-scratch.git
+[submodule "reference/gpt-researcher"]
+	path = reference/gpt-researcher
+	url = https://github.com/assafelovic/gpt-researcher.git
+[submodule "reference/vanna"]
+	path = reference/vanna
+	url = https://github.com/vanna-ai/vanna.git
+[submodule "reference/tau2-bench"]
+	path = reference/tau2-bench
+	url = https://github.com/sierra-research/tau2-bench.git
