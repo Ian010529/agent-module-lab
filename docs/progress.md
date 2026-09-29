@@ -38,11 +38,14 @@ Creator Outreach / Reply Copilot
 
 ## Next step
 
-1. 读取 `agents-from-scratch` 中与 structured output / schema 有关的真实实现。
-2. 定义第一版 Creator Reply extraction 的输入与输出 schema。
-3. 建立最小固定测试案例。
-4. 实现 extraction slice。
-5. 用正常与失败案例验证，再决定下一 slice。
+当前 Slice 固定按 `docs/workspace-guide.md` 的推进协议执行：
+
+1. **先学技术**：Structured Output、Schema、Pydantic validation，以及模型输出与 deterministic validation 的边界。
+2. **再看源码**：读取 `agents-from-scratch` 中 `RouterSchema`、`with_structured_output` 及其 routing 使用方式。
+3. **设计自己的版本**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 和失败处理，不复制参考 schema。
+4. **建立测试案例**：先准备正常、缺字段、模糊报价、格式异常等固定案例。
+5. **实现**：使用 vibe coding 完成 Reply Extraction slice。
+6. **验证与复盘**：跑正常与 failure cases，确认能够解释设计和取舍后，再更新进度并进入下一 Slice。
 
 ## Not decided yet
 

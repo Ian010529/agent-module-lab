@@ -87,3 +87,67 @@ reference 默认保持 pinned。
 - 外部源码用于理解和比较，不机械复制。
 - 每个功能至少要有对应测试或评测依据。
 - 重要架构决策记录原因与重新评估条件。
+
+
+## 每个开发 Slice 的固定推进协议
+
+每个 Slice 都按下面的顺序推进，不跳步：
+
+1. **Technical foundation**
+   - 先学习当前 Slice 必需的技术原理。
+   - 只学当前任务真正需要的部分，不提前扩展到无关技术。
+   - 不允许直接跳到让 AI 生成实现。
+
+2. **Reference implementation**
+   - 阅读 pinned reference 中与当前技术直接相关的真实源码。
+   - 追踪输入、关键对象、控制流和失败路径。
+   - 理解参考实现为什么这样设计，而不是只记 API。
+
+3. **Own design**
+   - 根据本项目需求自己定义输入、输出、状态、边界和技术选择。
+   - 不机械复制参考项目的 schema、workflow、tool 或目录结构。
+   - 明确哪些步骤属于 LLM、deterministic code、已有业务接口、Tool 或 HITL。
+
+4. **Implementation**
+   - 使用 vibe coding 加速实现。
+   - 关键架构、关键代码路径、权限边界和失败处理必须能够解释。
+   - 不因为 AI 建议就自动引入新框架、中间件或基础设施。
+
+5. **Verification**
+   - 建立正常案例、边界案例和 failure cases。
+   - 能确定性判断的行为优先使用程序测试。
+   - Agent 行为再使用适合的 eval 方法验证。
+
+6. **Understanding check**
+   - 完成 Slice 前，需要能够脱离参考答案解释：
+     - 它怎么工作；
+     - 为什么这样设计；
+     - 为什么不用更简单或其他替代方案；
+     - 哪些 failure 需要在哪一层处理；
+     - 什么条件出现时应该重新设计。
+
+7. **State update**
+   - 根据真实完成情况更新 `docs/progress.md`。
+   - 根据实际掌握程度更新 `docs/technical-map.md`。
+   - 只有产生真实、非显然且需要长期保留的架构决策时，才新增 `docs/decisions/`。
+
+## 进度更新规则
+
+项目进度会随着真实学习和实现持续更新，但不为了“有更新”而机械改文档。
+
+以下情况应更新 `docs/progress.md`：
+
+- 当前 Slice 开始或结束；
+- 实现、测试或评测状态发生实质变化；
+- 当前 blocker、下一步或项目边界发生变化；
+- 发现参考实现的重要限制或需要调整项目方案。
+
+以下情况应更新 `docs/technical-map.md`：
+
+- 一个技术从 `NOT STARTED` 进入正式学习；
+- 已能解释基本机制，进入 `UNDERSTANDING`；
+- 已在自己的项目中实现并通过测试/评测，进入 `PRACTICED`；
+- 能脱离源码与提示解释设计、取舍和 failure modes，进入 `CAN EXPLAIN`；
+- 需求证明当前不需要某项技术，标记 `NOT REQUIRED NOW`。
+
+“讨论过”或“看过源码”本身不等于掌握，不能因此直接标记为 `PRACTICED` 或 `CAN EXPLAIN`。
