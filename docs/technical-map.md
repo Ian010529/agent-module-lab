@@ -56,11 +56,11 @@
 
 对应 teach lesson：
 
-`learning/lessons/01-structured-output.html`
+`learning/lessons/0001-schema-is-a-contract.html`
 
 对应 learning record：
 
-`learning/learning-records/001-structured-output.md`
+`learning/learning-records/0001-creator-reply-facts-carry-semantics.md`
 
 当前已进入 `UNDERSTANDING`，但尚未达到 `PRACTICED`。
 
