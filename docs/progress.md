@@ -14,7 +14,7 @@ Creator Outreach / Reply Copilot
 
 teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
 
-`learning/lessons/01-structured-output.html`
+`learning/lessons/0001-schema-is-a-contract.html`
 
 ## Completed
 
@@ -58,8 +58,8 @@ teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
 
 当前 Slice 按 `docs/workspace-guide.md` 执行：
 
-1. 完成 `learning/lessons/01-structured-output.html` 的练习与 Final Gate。
-2. 只有通过 gate 后，更新 `learning/learning-records/001-structured-output.md`。
+1. 完成 `learning/lessons/0001-schema-is-a-contract.html` 的练习与 Final Gate。
+2. 只有通过 gate 后，更新 `learning/learning-records/0001-creator-reply-facts-carry-semantics.md`。
 3. **Own Design**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 与 failure handling，不复制 RouterSchema。
 4. **建立测试案例**：正常、缺字段、模糊报价、多个报价条件、格式异常等固定案例。
 5. **Implementation**：使用 vibe coding 完成 Reply Extraction slice。
