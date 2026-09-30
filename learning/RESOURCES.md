@@ -2,35 +2,43 @@
 
 ## Knowledge
 
+### Project source — default first choice for the current slice
+
+- [Project reference: `reference/agents-from-scratch`](https://github.com/Ian010529/agent-module-lab/tree/main/reference/agents-from-scratch)
+
+Pinned in this repository at commit `603fc7a4ac6119004f43894395e504a1fefcc6c0`. Use first for: learning how the reference system actually implements structured output, routing, state transitions, and evaluation.
+
+- [Pinned source: `src/email_assistant/schemas.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
+
+This is the exact file behind the repository submodule. Use for: `RouterSchema`, `Literal`, and the separation between one LLM call's output schema and workflow state.
+
+- [Pinned source: `src/email_assistant/email_assistant.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
+
+This is the exact file behind the repository submodule. Use for: `with_structured_output(RouterSchema)`, `result.classification`, and deterministic routing after the model decision.
+
+- [Pinned source: `src/email_assistant/eval/evaluate_triage.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/eval/evaluate_triage.py)
+
+This is the exact file behind the repository submodule. Use for: seeing why schema-valid output can still fail task evaluation.
+
+### Official documentation — use to verify contracts and semantics
+
 - [LangChain Reference: `BaseChatModel.with_structured_output`](https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output)
 
-Primary API reference for the exact wrapper used by the pinned `agents-from-scratch` implementation. Use for: what the wrapper accepts and what it returns.
+Primary API reference for the wrapper used by the pinned source. Use for: what the API accepts, how the schema is supplied, and what kind of object is returned.
 
 - [OpenAI Guide: Structured model outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 
-Primary provider documentation explaining schema adherence, the difference from JSON mode, and the important limitation that schema-conforming outputs can still contain semantic mistakes. Use for: separating output-shape guarantees from task correctness.
+Primary provider documentation on schema adherence and its limits. Use for: verifying that structure conformance does not imply semantic correctness.
 
 - [Pydantic Documentation: Validators](https://docs.pydantic.dev/latest/concepts/validators/)
 
-Primary Pydantic documentation for field and model validators. Use for: cross-field constraints once the Creator Reply schema needs relationships such as exact-vs-range pricing.
-
-- [Project reference: `agents-from-scratch` pinned commit](https://github.com/langchain-ai/agents-from-scratch/tree/603fc7a4ac6119004f43894395e504a1fefcc6c0)
-
-The exact code version pinned in this repository. Use for: tracing `RouterSchema → with_structured_output → classification → deterministic routing → eval` without drifting to newer implementations.
-
-- [Project file: RouterSchema](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
-
-Primary source for the reference schema used in the current lesson. Use for: seeing how a finite classification space is represented with Pydantic and `Literal`.
-
-- [Project file: email assistant routing](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
-
-Primary source for the reference execution path. Use for: locating `with_structured_output`, reading `result.classification`, and seeing deterministic routing after the LLM decision.
+Primary validation documentation. Use only when the project schema creates a real need for field/model-level constraints such as exact-vs-range pricing.
 
 ## Wisdom (Communities)
 
 - [LangChain Forum](https://forum.langchain.com/)
 
-Official community support venue referenced by LangChain's own issue templates. Use for: implementation-specific behaviour, provider quirks, or cases where documentation and actual runtime behaviour diverge.
+Official community support venue. Use for: runtime behaviour, provider quirks, or cases where documentation and observed implementation behaviour diverge.
 
 ## Gaps
 
