@@ -6,7 +6,7 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-第一段实际 Slice 已进入正式技术学习。
+第一段实际 Slice 已完成当前 teach learning gate，进入 Own Design。
 
 当前正在学习：
 
@@ -48,7 +48,7 @@ teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
 
 当前状态：
 
-**UNDERSTANDING，尚未 PRACTICED**
+**UNDERSTANDING，Lesson 0001 gate passed；尚未 PRACTICED**
 
 项目落点：
 
@@ -58,13 +58,11 @@ teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
 
 当前 Slice 按 `docs/workspace-guide.md` 执行：
 
-1. 完成 `learning/lessons/0001-schema-is-a-contract.html` 的练习与 Final Gate。
-2. 只有通过 gate 后，更新 `learning/learning-records/0001-creator-reply-facts-carry-semantics.md`。
-3. **Own Design**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 与 failure handling，不复制 RouterSchema。
-4. **建立测试案例**：正常、缺字段、模糊报价、多个报价条件、格式异常等固定案例。
-5. **Implementation**：使用 vibe coding 完成 Reply Extraction slice。
-6. **Verification**：运行正常与 failure cases，区分 schema validity 与 extraction correctness。
-7. 完成理解检查后，再判断 Structured Output / Schema Validation 是否可更新为 `PRACTICED`，并进入下一 Slice。
+1. **Own Design**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 与 failure handling，不复制 RouterSchema。
+2. **建立测试案例**：正常、缺字段、模糊报价、多个报价条件、格式异常等固定案例。
+3. **Implementation**：使用 vibe coding 完成 Reply Extraction slice。
+4. **Verification**：运行正常与 failure cases，区分 schema validity 与 extraction correctness。
+5. 完成理解检查后，再判断 Structured Output / Schema Validation 是否可更新为 `PRACTICED`，并进入下一 Slice。
 
 ## Not decided yet
 
