@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 0001 — A Schema Is a Contract, Not a Truth Detector</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <div class="lesson-kicker">Lesson 0001 · Creator Reply Extraction</div>
+    <h1>A schema is a contract,<br>not a truth detector.</h1>
+    <p class="lede">这一课只解决一个问题：当 Creator Reply 被 LLM 变成结构化数据时，<strong>哪里是结构问题，哪里是理解问题，哪里应该交给确定性代码</strong>。</p>
+    <div class="meta">
+      <span>约 10–15 分钟</span>
+      <span>一个 tangible win</span>
+      <span>需要：你已经看过 RouterSchema</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="eyebrow">Why this matters</div>
+    <h2>你的下游代码会相信这个对象。</h2>
+    <p>Creator Outreach 的第一段不是“让模型写得像 JSON”，而是把自然语言回复变成后续程序能够消费的对象。LangChain 的 <code>with_structured_output</code> 就是为这种“按 schema 返回对象”的调用方式提供包装。<sup><a href="#s1">[1]</a></sup></p>
+
+    <pre>Creator reply
+      ↓
+LLM interprets meaning
+      ↓
+structured object
+      ↓
+deterministic checks
+      ↓
+next workflow decision</pre>
+
+    <p>Structured Outputs 可以约束输出去遵循给定 schema；但官方文档也明确提醒：<strong>结构正确不代表内容一定正确</strong>。模型仍然可能在语义上犯错。<sup><a href="#s2">[2]</a></sup></p>
+
+    <div class="callout">
+      <strong>这一课结束时，你要能做到：</strong><br>
+      看到一个失败案例，立刻把它放到「结构验证 / 语义验证 / 规则验证」中的正确一层。
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The model</div>
+    <h2>同一封邮件，要过三道不同的门。</h2>
+
+    <p>假设达人回复：</p>
+    <pre>I'd love to collaborate.
+My usual rate is 1800.
+Paid usage may cost more.</pre>
+
+    <div class="figure" aria-label="three validation layers">
+      <div>
+        <strong>1 · 语义层</strong>
+        <p>LLM 要理解：愿意合作、1800 是 usual rate、paid usage 可能加价、货币未给出。</p>
+      </div>
+      <div>
+        <strong>2 · 结构层</strong>
+        <p>Schema 要检查：字段存在吗？类型对吗？枚举值合法吗？</p>
+      </div>
+      <div>
+        <strong>3 · 规则层</strong>
+        <p>代码再判断：若 budget=1500，1800 是否超预算？</p>
+      </div>
+    </div>
+
+    <p>这三层不能互相替代。Pydantic 可以做字段和 model-level validation；它验证的是数据是否满足你定义的类型和约束，而不是替你证明 LLM 对原邮件的理解是真的。<sup><a href="#s3">[3]</a></sup></p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Reference code</div>
+    <h2>现在把这三层映射回 pinned 源码。</h2>
+
+    <p>在我们固定的 <code>agents-from-scratch</code> commit 里，<code>RouterSchema</code> 把分类空间限制为三个合法值：</p>
+    <pre>classification: Literal["ignore", "respond", "notify"]</pre>
+
+    <p>随后模型被包装成 structured-output 调用：</p>
+    <pre>llm_router = llm.with_structured_output(RouterSchema)</pre>
+
+    <p>模型返回后，程序读取 <code>result.classification</code>，再用普通 <code>if / elif</code> 决定下一条路径。换句话说：<strong>“邮件是什么意思”由模型判断；“respond 之后去哪”由代码决定。</strong><sup><a href="#s4">[4]</a></sup></p>
+
+    <p>最关键的一点：假如模型给了合法的 <code>notify</code>，schema 可以完全通过；但如果标准答案本该是 <code>respond</code>，任务仍然是错的。参考项目的 triage eval 正是通过和 reference output 做 exact match 来检查这种错误。<sup><a href="#s5">[5]</a></sup></p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Practice</div>
+    <h2>不要复述定义。把错误放到正确的一层。</h2>
+
+    <div class="quiz" data-quiz-id="p1" data-correct="semantic" data-explanation="notify 是合法 enum，所以结构没坏；错的是模型对邮件含义的判断。">
+      <p><strong>Case 1.</strong> Schema 允许 <code>ignore/respond/notify</code>。模型输出 <code>notify</code>，但这封邮件其实明确要求回复。哪一层出了问题？</p>
+      <div class="choices">
+        <button class="choice" data-choice="schema">结构验证</button>
+        <button class="choice" data-choice="semantic">语义验证</button>
+        <button class="choice" data-choice="rule">规则验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="p2" data-correct="schema" data-explanation="字段要求数值，但得到无法解析的文本，这是结构/类型层的失败。">
+      <p><strong>Case 2.</strong> Schema 要求 <code>amount: float</code>，模型返回 <code>amount="banana"</code>。哪一层应该挡住它？</p>
+      <div class="choices">
+        <button class="choice" data-choice="semantic">语义验证</button>
+        <button class="choice" data-choice="schema">结构验证</button>
+        <button class="choice" data-choice="rule">规则验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="p3" data-correct="rule" data-explanation="1800 与 1500 的比较是确定性业务规则，不需要再让 LLM 判断。">
+      <p><strong>Case 3.</strong> 已提取 <code>amount=1800</code>，campaign budget 是 <code>1500</code>。判断是否超预算属于哪一层？</p>
+      <div class="choices">
+        <button class="choice" data-choice="schema">结构验证</button>
+        <button class="choice" data-choice="rule">规则验证</button>
+        <button class="choice" data-choice="semantic">语义验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+  </section>
+
+  <section class="gate" data-gate>
+    <div class="eyebrow">Retrieval gate</div>
+    <h2>最后三题：不回看上面。</h2>
+    <p class="small">这不是“看懂了没有”，而是检查你能否从记忆里取出来。</p>
+
+    <div class="quiz" data-quiz-id="g1" data-correct="semantic" data-explanation="结构允许 USD，但原文没给货币；这是模型凭空补了事实。">
+      <p><strong>1.</strong> 原文只有 “My rate is 1800.”，模型输出 <code>currency="USD"</code>，而 schema 允许 USD。错误属于？</p>
+      <div class="choices">
+        <button class="choice" data-choice="rule">规则验证</button>
+        <button class="choice" data-choice="semantic">语义验证</button>
+        <button class="choice" data-choice="schema">结构验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="g2" data-correct="schema" data-explanation="reply 不在 Literal 的合法集合中，schema 应该拒绝它。">
+      <p><strong>2.</strong> `classification` 只允许 ignore/respond/notify，模型返回 <code>reply</code>。错误属于？</p>
+      <div class="choices">
+        <button class="choice" data-choice="schema">结构验证</button>
+        <button class="choice" data-choice="semantic">语义验证</button>
+        <button class="choice" data-choice="rule">规则验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="g3" data-correct="rule" data-explanation="事实已结构化，接下来只是确定性比较。">
+      <p><strong>3.</strong> 已有 `quote=2500` 和 `max_budget=2000`。是否需要人工审批的第一步数值判断属于？</p>
+      <div class="choices">
+        <button class="choice" data-choice="semantic">语义验证</button>
+        <button class="choice" data-choice="schema">结构验证</button>
+        <button class="choice" data-choice="rule">规则验证</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="gate-status" data-gate-status></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Takeaway</div>
+    <h2>只记这一张图。</h2>
+    <pre>LLM: “这句话是什么意思？”
+          ↓
+Schema: “这个对象合法吗？”
+          ↓
+Code: “已知事实满足规则吗？”</pre>
+
+    <p>下一次 lesson 不会继续堆知识。它只会在这个边界已经稳定后，带你解决下一个实际问题：怎样设计 Creator Reply schema，既能让程序使用，又不把模糊信息伪装成精确事实。</p>
+
+    <p><strong>Primary source to read yourself:</strong> <a href="https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output">LangChain — <code>with_structured_output</code> reference</a>.<sup><a href="#s1">[1]</a></sup></p>
+
+    <p class="small">哪里不清楚，直接回到 ChatGPT 问。Teacher 是课程的一部分，不需要靠 HTML 自学到底。</p>
+
+    <div class="nav">
+      <span>Lesson 0001</span>
+      <a href="../reference/structured-output.html">Quick reference →</a>
+    </div>
+  </section>
+
+  <section class="source-list">
+    <div class="eyebrow">Sources</div>
+    <ol>
+      <li id="s1"><a href="https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output">LangChain Reference — with_structured_output</a></li>
+      <li id="s2"><a href="https://developers.openai.com/api/docs/guides/structured-outputs">OpenAI — Structured model outputs</a></li>
+      <li id="s3"><a href="https://docs.pydantic.dev/latest/concepts/validators/">Pydantic — Validators</a></li>
+      <li id="s4"><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py">agents-from-scratch — email_assistant.py, pinned commit</a></li>
+      <li id="s5"><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/eval/evaluate_triage.py">agents-from-scratch — evaluate_triage.py, pinned commit</a></li>
+    </ol>
+  </section>
+</main>
+</body>
+</html>
