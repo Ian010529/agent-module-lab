@@ -101,6 +101,7 @@ reference 默认保持 pinned。
 - `NOT REQUIRED NOW` 的技术不创建 lesson。
 - 能由 deterministic code 可靠解决的，不默认交给 LLM。
 - 已知下一步必须调用哪个业务接口时，不默认把它包装成让 Agent 自主选择的 Tool。
+- 当前 Slice 有对应 pinned reference 源码时，教学默认先从仓库中的真实源码出发，再用官方文档校验 API 契约与技术边界。
 - 外部源码用于理解和比较，不机械复制。
 - 每个功能至少要有对应测试或评测依据。
 - 重要架构决策记录原因与重新评估条件。
