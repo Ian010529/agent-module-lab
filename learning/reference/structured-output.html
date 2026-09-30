@@ -3,64 +3,68 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Structured Output Reference</title>
+  <title>Structured Output Contract — Quick Reference</title>
   <link rel="stylesheet" href="../assets/lesson.css" />
 </head>
 <body>
 <main>
-  <h1>Structured Output — Reference</h1>
-  <p><small class="muted">用于复习和查阅，不替代 lesson。</small></p>
+  <header>
+    <div class="lesson-kicker">Reference · Structured Output</div>
+    <h1>Contract ≠ truth.</h1>
+    <p class="lede">Creator Reply extraction 的快速判断表。lesson 用来学，这一页用来回来查。</p>
+  </header>
 
-  <section class="card">
-    <h2>一句话定义</h2>
-    <p><strong>Structured Output：</strong>把 LLM 的自然语言理解结果限制为程序可稳定消费的数据结构。</p>
-    <p><strong>Schema：</strong>定义允许的字段、类型和值，是模型输出与下游程序之间的数据契约。</p>
-  </section>
-
-  <section class="card">
-    <h2>三种正确性不要混</h2>
+  <section>
+    <h2>三层边界</h2>
     <table>
-      <thead><tr><th>层</th><th>问题</th><th>例子</th></tr></thead>
+      <thead>
+        <tr><th>层</th><th>它回答什么</th><th>典型例子</th></tr>
+      </thead>
       <tbody>
-        <tr><td>Schema / type validity</td><td>结构是否合法？</td><td><code>amount</code> 是否是 float，classification 是否属于 Literal</td></tr>
-        <tr><td>Semantic correctness</td><td>模型有没有读对原文？</td><td>原文 £1200，却提取成 £1500</td></tr>
-        <tr><td>Business validation</td><td>结构化事实是否满足业务规则？</td><td>报价 1800 是否超过预算 1500</td></tr>
+        <tr><td><strong>语义</strong></td><td>原文是什么意思？</td><td>“usual rate” 是常规费率，不是本次最终成交价</td></tr>
+        <tr><td><strong>结构</strong></td><td>对象满足 schema 吗？</td><td>float / Literal / required field / model constraint</td></tr>
+        <tr><td><strong>规则</strong></td><td>已知事实满足确定性业务条件吗？</td><td>1800 &gt; 1500；currency is None</td></tr>
       </tbody>
     </table>
   </section>
 
-  <section class="card">
-    <h2>Schema 设计原则</h2>
-    <ul>
-      <li>unknown 不要 guess：缺失字段允许 None 或明确 missing 状态。</li>
-      <li>ambiguous 不要制造 false precision：range、approximate、relative date 保留不确定性。</li>
-      <li>有绑定关系的字段使用 nested object，例如报价金额与报价条件。</li>
-      <li>Literal 用于稳定的有限状态空间，不要把开放自然语言强塞成 enum。</li>
-      <li>只建模下游决策真正需要的信息，不追求万能 schema。</li>
-    </ul>
+  <section>
+    <h2>一个最小 mental model</h2>
+    <pre>text
+ ↓  LLM
+meaning
+ ↓  schema
+valid object
+ ↓  deterministic code
+business decision</pre>
   </section>
 
-  <section class="card">
-    <h2>Reference execution chain</h2>
-    <pre>email_input
-→ prompt
-→ llm.with_structured_output(RouterSchema)
-→ RouterSchema result
+  <section>
+    <h2>最常见的误判</h2>
+    <table>
+      <tbody>
+        <tr><td>合法 enum 但分类错</td><td><strong>语义错误</strong></td></tr>
+        <tr><td>字段类型/枚举不合法</td><td><strong>结构错误</strong></td></tr>
+        <tr><td>预算、阈值、缺失字段检查</td><td><strong>规则检查</strong></td></tr>
+        <tr><td>Schema 通过</td><td><strong>不代表 extraction 正确</strong></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Reference code trace</h2>
+    <pre>RouterSchema
+→ with_structured_output(...)
 → result.classification
 → deterministic routing
-→ classification eval</pre>
-    <p>Prompt 主要定义“怎么判断”；Schema 主要定义“结果必须长什么样”。</p>
+→ exact-match eval</pre>
+    <p class="small">Primary references: LangChain API, OpenAI Structured Outputs guide, Pydantic validators, and the pinned agents-from-scratch commit listed in <code>../RESOURCES.md</code>.</p>
   </section>
 
-  <section class="card">
-    <h2>Creator Reply 当前迁移方向</h2>
-    <pre>Creator text
-→ LLM semantic extraction
-→ CreatorReply structured object
-→ schema / cross-field validation
-→ deterministic checks
-→ later workflow decision</pre>
-  </section>
+  <div class="nav">
+    <a href="../lessons/0001-schema-is-a-contract.html">← Lesson 0001</a>
+    <span>Quick reference</span>
+  </div>
 </main>
 </body>
 </html>
