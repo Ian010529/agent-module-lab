@@ -6,7 +6,15 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-参考源码执行链已梳理，准备从架构边界进入第一段实际实现。
+第一段实际 Slice 已进入正式技术学习。
+
+当前正在学习：
+
+**Structured Output + Schema Validation → Creator Reply Extraction**
+
+teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
+
+`learning/lessons/01-structured-output.html`
 
 ## Completed
 
@@ -23,14 +31,24 @@ Creator Outreach / Reply Copilot
   - 只取得当前 decision 需要的最少上下文；
   - 商务判断与对外执行审批可以是不同的 HITL；
   - 已知下一步必须调用哪个接口时，不需要为了 Agent 化而让模型选择 Tool。
+- Structured Output / Schema Validation 已进入正式学习：
+  - 已讨论 structured output、schema、Literal、可空字段、nested model；
+  - 已讨论 missing / ambiguous / false precision；
+  - 已区分 semantic extraction 与 deterministic validation；
+  - 已读取 reference 中 RouterSchema → with_structured_output → classification → deterministic routing → eval 的主链。
+- 已建立单仓库 teach 工作区，并创建当前 lesson、reference cheat sheet 和进行中的 learning record。
 
 ## Current technical focus
 
-技术学习与项目实现并行，完整状态见 `docs/technical-map.md`。
+完整状态见 `docs/technical-map.md`。
 
-下一正式技术单元：
+当前技术单元：
 
 **Structured Output + Schema Validation**
+
+当前状态：
+
+**UNDERSTANDING，尚未 PRACTICED**
 
 项目落点：
 
@@ -38,14 +56,15 @@ Creator Outreach / Reply Copilot
 
 ## Next step
 
-当前 Slice 固定按 `docs/workspace-guide.md` 的推进协议执行：
+当前 Slice 按 `docs/workspace-guide.md` 执行：
 
-1. **先学技术**：Structured Output、Schema、Pydantic validation，以及模型输出与 deterministic validation 的边界。
-2. **再看源码**：读取 `agents-from-scratch` 中 `RouterSchema`、`with_structured_output` 及其 routing 使用方式。
-3. **设计自己的版本**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 和失败处理，不复制参考 schema。
-4. **建立测试案例**：先准备正常、缺字段、模糊报价、格式异常等固定案例。
-5. **实现**：使用 vibe coding 完成 Reply Extraction slice。
-6. **验证与复盘**：跑正常与 failure cases，确认能够解释设计和取舍后，再更新进度并进入下一 Slice。
+1. 完成 `learning/lessons/01-structured-output.html` 的练习与 Final Gate。
+2. 只有通过 gate 后，更新 `learning/learning-records/001-structured-output.md`。
+3. **Own Design**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 与 failure handling，不复制 RouterSchema。
+4. **建立测试案例**：正常、缺字段、模糊报价、多个报价条件、格式异常等固定案例。
+5. **Implementation**：使用 vibe coding 完成 Reply Extraction slice。
+6. **Verification**：运行正常与 failure cases，区分 schema validity 与 extraction correctness。
+7. 完成理解检查后，再判断 Structured Output / Schema Validation 是否可更新为 `PRACTICED`，并进入下一 Slice。
 
 ## Not decided yet
 
@@ -59,4 +78,4 @@ Creator Outreach / Reply Copilot
 - 具体模型与模型提供商
 - 是否需要动态 Tool Registry / Tool Retrieval
 
-这些内容都必须由实际需求触发，不能因为参考仓库使用或技术上“可以做”就提前引入。
+这些内容都必须由实际需求触发，不能因为参考仓库使用或技术上“可以做”就提前引入，也不提前为其创建 lesson。

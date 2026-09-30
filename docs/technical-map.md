@@ -14,8 +14,8 @@
 |---|---|---|
 | Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
 | LLM Messages / Prompt | NOT STARTED | Reply extraction |
-| Structured Output | NOT STARTED | 下一技术单元：Reply extraction |
-| Schema Validation | NOT STARTED | 下一技术单元：Reply extraction |
+| Structured Output | UNDERSTANDING | 当前 lesson：Reply extraction；尚未项目实践 |
+| Schema Validation | UNDERSTANDING | 当前 lesson：Reply extraction；尚未项目实践 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续 Context / Tool layer 实践 |
 | 普通函数 vs Agent Tool | UNDERSTANDING | Campaign policy 查询边界 |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
@@ -50,18 +50,28 @@
 
 ## 当前技术单元
 
-下一步正式进入：
+正在进行：
 
 **Structured Output + Schema Validation → Reply Extraction**
 
-完成标准不是“代码能运行”，而是至少能够：
+对应 teach lesson：
+
+`learning/lessons/01-structured-output.html`
+
+对应 learning record：
+
+`learning/learning-records/001-structured-output.md`
+
+当前已进入 `UNDERSTANDING`，但尚未达到 `PRACTICED`。
+
+完成标准不是“看完 lesson”或“代码能运行”，而是至少能够：
 
 - 解释为什么该任务适合 structured output；
 - 设计输出 schema；
 - 区分模型语义提取与 deterministic validation；
-- 处理缺字段、模糊报价、格式异常等失败情况；
+- 处理缺字段、模糊报价、多个报价条件、格式异常等失败情况；
+- 区分 schema validity 与 semantic correctness；
 - 用固定测试案例验证提取结果。
-
 
 ## 技术状态更新原则
 
@@ -73,4 +83,4 @@
 - 能脱离源码、提示和现成答案解释设计、替代方案、failure modes，并能迁移到新模块：可标记 `CAN EXPLAIN`。
 - 当前需求没有必要使用：标记 `NOT REQUIRED NOW`，不为了学习而强行引入。
 
-每个 Slice 结束时都检查本表，但只有状态真实变化时才修改。
+完成 teach lesson 或看过 reference 本身不等于 `PRACTICED`。每个 Slice 结束时都检查本表，但只有状态真实变化时才修改。
