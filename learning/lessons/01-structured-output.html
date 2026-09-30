@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 01 — Structured Output + Schema Validation</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+<main>
+  <h1>Lesson 01 — Structured Output + Schema Validation</h1>
+  <p><strong>项目落点：</strong>Creator Reply → structured extraction</p>
+  <p><small class="muted">状态：IN PROGRESS。目标不是记 API，而是能够独立设计第一版 Creator Reply extraction schema，并解释 validation 边界。</small></p>
+
+  <section class="card">
+    <h2>完成这一课后，你应该能做到</h2>
+    <ul>
+      <li>解释 structured output 为什么比“prompt 里要求返回 JSON”更适合作为程序接口。</li>
+      <li>用 Literal、可空字段和 nested model 表达业务事实，而不是制造 false precision。</li>
+      <li>区分 schema validity、semantic correctness 和 deterministic business validation。</li>
+      <li>追踪 reference 中 RouterSchema → with_structured_output → classification → routing → eval 的执行链。</li>
+      <li>为 Creator Reply 设计一个最小但不丢关键业务关系的 schema。</li>
+    </ul>
+  </section>
+
+  <section class="card exercise">
+    <h2>Checkpoint A — 先预测，再看解释</h2>
+
+    <h3>Q1</h3>
+    <p>RouterSchema 只允许 <code>ignore / respond / notify</code>。模型输出 <code>classification="notify"</code>，但标准答案其实应该是 <code>respond</code>。</p>
+    <button onclick="answer('q1','pass')">Schema validation 通过</button>
+    <button onclick="answer('q1','fail')">Schema validation 失败</button>
+    <div id="q1" class="result"></div>
+
+    <h3>Q2</h3>
+    <p>同一个 RouterSchema 下，模型输出 <code>classification="reply"</code>。</p>
+    <button onclick="answer('q2','pass')">Schema validation 通过</button>
+    <button onclick="answer('q2','fail')">Schema validation 失败</button>
+    <div id="q2" class="result"></div>
+
+    <h3>Q3</h3>
+    <p>达人报价 1800，campaign budget 是 1500。判断是否超预算应该主要交给谁？</p>
+    <button onclick="answer('q3','llm')">LLM</button>
+    <button onclick="answer('q3','code')">Deterministic code</button>
+    <div id="q3" class="result"></div>
+  </section>
+
+  <section class="card">
+    <h2>核心模型</h2>
+    <pre>自然语言
+   ↓
+LLM semantic extraction
+   ↓
+structured object
+   ↓
+schema / type validation
+   ↓
+deterministic validation / business rules
+   ↓
+next workflow decision</pre>
+
+    <p><strong>Schema 可以保证“形状合法”，不能保证“模型读对了原文”。</strong></p>
+
+    <p>例如原文是 £1200，模型错误抽成 £1500。只要字段类型和 Literal 合法，Pydantic 仍可能通过。因此后续还需要固定案例检查 extraction correctness。</p>
+  </section>
+
+  <section class="card exercise">
+    <h2>Checkpoint B — 业务语义不能被 Schema 压扁</h2>
+    <p>Creator Reply：</p>
+    <pre>I'm definitely interested.
+
+For one TikTok video my rate would be £1,200.
+If you also want 3 months paid usage, it would be £1,600.
+
+I could deliver by 20 October.</pre>
+
+    <p>先不要看答案。请自己写出系统至少需要保留的业务事实，并思考为什么下面这个 schema 会丢信息：</p>
+    <pre>class CreatorReply(BaseModel):
+    interested: bool
+    price_amount: float
+    currency: str
+    delivery_date: str</pre>
+
+    <details>
+      <summary>完成后再展开参考</summary>
+      <p>关键问题不是“有两个数字”，而是两个价格分别绑定不同条件。仅保存 <code>price_amount</code> 会破坏“价格 ↔ 条件”的关系。</p>
+      <pre>class Quote(BaseModel):
+    amount: float
+    currency: str | None
+    condition: str
+
+class CreatorReply(BaseModel):
+    interest: Literal["interested", "not_interested", "conditional", "unclear"]
+    quotes: list[Quote]
+    can_deliver_by: str | None</pre>
+      <p>这仍不是最终版本，只是展示 nested model 为什么出现。</p>
+    </details>
+  </section>
+
+  <section class="card exercise">
+    <h2>Checkpoint C — Missing、Ambiguous、False Precision</h2>
+    <p>Creator Reply：</p>
+    <pre>Sounds interesting.
+For TikTok I usually charge around 2–3k depending on usage.
+I should be able to deliver sometime next month.</pre>
+
+    <ol>
+      <li>能否安全填一个精确的 <code>price_amount</code>？为什么？</li>
+      <li>如果没有货币符号或货币名称，currency 应该怎么表示？</li>
+      <li>“sometime next month” 能否直接标准化成某个具体日期？</li>
+      <li>哪些判断需要 LLM，哪些可以由 code 在 extraction 后确定？</li>
+    </ol>
+
+    <details>
+      <summary>完成后再展开检查点</summary>
+      <ul>
+        <li>2–3k 是 range，不应该捏造成 2500 这样的精确值。</li>
+        <li>货币未给出时应保留 missing/None，而不是猜。</li>
+        <li>模糊时间应保留原始语义，不能随意制造具体日期。</li>
+        <li>“文本是什么意思”属于 semantic extraction；字段是否缺失、数字比较、明确业务规则优先由 deterministic code 完成。</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>Reference trace — 不要只看 API</h2>
+    <p>在 pinned <code>reference/agents-from-scratch</code> 中，按这个顺序追踪：</p>
+    <pre>schemas.py
+RouterSchema
+   ↓
+email_assistant.py
+llm.with_structured_output(RouterSchema)
+   ↓
+triage_router()
+   ↓
+result.classification
+   ↓
+if / elif deterministic routing
+   ↓
+eval/evaluate_triage.py
+exact-match against reference output</pre>
+
+    <p>追踪时必须能回答：</p>
+    <ol>
+      <li><code>RouterSchema</code> 约束了什么？</li>
+      <li>分类语义主要来自 schema 还是 prompt？</li>
+      <li><code>with_structured_output</code> 在执行链哪里介入？</li>
+      <li>为什么一个合法的 <code>notify</code> 仍可能在 eval 中失败？</li>
+      <li><code>RouterSchema</code> 为什么不等于 workflow <code>State</code>？</li>
+    </ol>
+  </section>
+
+  <section class="card checkpoint">
+    <h2>Final Gate — 通过后才进入 Own Design</h2>
+    <p>不要照抄 reference。请针对 Creator Reply 用自己的话完成：</p>
+    <ol>
+      <li>说明为什么这个任务适合 structured output。</li>
+      <li>设计一个能保存“多个报价及其条件”的最小 schema。</li>
+      <li>说明如何表示 missing currency 和模糊报价。</li>
+      <li>各举一个 schema validation、semantic correctness、business validation 的例子。</li>
+      <li>说明 reference 的 RouterSchema 哪些思想可以迁移，哪些字段/设计不能直接复制。</li>
+    </ol>
+    <p><strong>通过标准：</strong>不看参考答案也能回答，并能处理一个没见过的新 Creator Reply。通过后更新 <code>learning/learning-records/001-structured-output.md</code>，然后进入项目 Own Design。</p>
+  </section>
+</main>
+
+<script>
+function answer(id, value) {
+  const el = document.getElementById(id);
+  const correct = {q1: "pass", q2: "fail", q3: "code"};
+  const messages = {
+    q1: "合法 Literal 值，所以 schema 可以通过；但 semantic correctness 仍然可能错。",
+    q2: "reply 不在 Literal 集合中，因此不符合这个 schema。",
+    q3: "1800 > 1500 是确定性比较，应交给 code。"
+  };
+  if (value === correct[id]) {
+    el.textContent = "✓ " + messages[id];
+  } else {
+    el.textContent = "✗ 再想一次。提示：区分结构是否合法，与业务答案是否正确。";
+  }
+}
+</script>
+</body>
+</html>
