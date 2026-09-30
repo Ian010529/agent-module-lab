@@ -1,71 +1,38 @@
-# Learning Resources
+# AI Module Engineering Resources
 
-## Project source of truth
+## Knowledge
 
-学习前先以项目文件恢复边界：
+- [LangChain Reference: `BaseChatModel.with_structured_output`](https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output)
 
-- `docs/project-scope.md` — 项目目标与边界
-- `docs/progress.md` — 当前 Slice 与下一步
-- `docs/technical-map.md` — 技术掌握状态
-- `docs/workspace-guide.md` — 工作与学习推进协议
-- `docs/references.md` — pinned reference 版本
+Primary API reference for the exact wrapper used by the pinned `agents-from-scratch` implementation. Use for: what the wrapper accepts and what it returns.
 
-## Current lesson
+- [OpenAI Guide: Structured model outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
 
-### Structured Output + Schema Validation
+Primary provider documentation explaining schema adherence, the difference from JSON mode, and the important limitation that schema-conforming outputs can still contain semantic mistakes. Use for: separating output-shape guarantees from task correctness.
 
-项目落点：
+- [Pydantic Documentation: Validators](https://docs.pydantic.dev/latest/concepts/validators/)
 
-**Creator Reply → structured extraction**
+Primary Pydantic documentation for field and model validators. Use for: cross-field constraints once the Creator Reply schema needs relationships such as exact-vs-range pricing.
 
-当前 reference：
+- [Project reference: `agents-from-scratch` pinned commit](https://github.com/langchain-ai/agents-from-scratch/tree/603fc7a4ac6119004f43894395e504a1fefcc6c0)
 
-`reference/agents-from-scratch`
+The exact code version pinned in this repository. Use for: tracing `RouterSchema → with_structured_output → classification → deterministic routing → eval` without drifting to newer implementations.
 
-Pinned commit：
+- [Project file: RouterSchema](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
 
-`603fc7a4ac6119004f43894395e504a1fefcc6c0`
+Primary source for the reference schema used in the current lesson. Use for: seeing how a finite classification space is represented with Pydantic and `Literal`.
 
-当前需要阅读的源码：
+- [Project file: email assistant routing](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
 
-- `src/email_assistant/schemas.py`
-  - `RouterSchema`
-  - `StateInput`
-  - `State`
-- `src/email_assistant/email_assistant.py`
-  - `llm.with_structured_output(RouterSchema)`
-  - `triage_router()`
-  - `result.classification`
-  - deterministic routing
-- `src/email_assistant/prompts.py`
-  - triage classification semantics
-- `src/email_assistant/eval/evaluate_triage.py`
-  - classification exact-match evaluation
+Primary source for the reference execution path. Use for: locating `with_structured_output`, reading `result.classification`, and seeing deterministic routing after the LLM decision.
 
-## Scope boundary for this lesson
+## Wisdom (Communities)
 
-需要掌握：
+- [LangChain Forum](https://forum.langchain.com/)
 
-- structured output 与普通 prompt JSON 的区别
-- schema 作为数据契约
-- Pydantic `BaseModel`
-- `Literal`、可空字段、nested model
-- missing vs ambiguous
-- raw vs normalized value
-- schema/type validation
-- cross-field validation 的概念
-- semantic correctness 与 schema validity 的区别
-- deterministic validation 与 LLM semantic extraction 的边界
-- reference 中 structured output 的真实执行链
+Official community support venue referenced by LangChain's own issue templates. Use for: implementation-specific behaviour, provider quirks, or cases where documentation and actual runtime behaviour diverge.
 
-当前不展开：
+## Gaps
 
-- Pydantic 高级 API 全集
-- JSON Schema 标准细节
-- provider-specific structured output 差异
-- RAG
-- Memory
-- MCP
-- Multi-Agent
-- dynamic Tool Registry
-- Redis / Queue
+- Provider-specific structured-output differences are intentionally not researched yet because the current slice has not selected a final model/provider.
+- Advanced Pydantic features are intentionally not researched until the Creator Reply schema demonstrates a real need for them.
