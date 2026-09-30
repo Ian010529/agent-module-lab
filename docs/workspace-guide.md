@@ -188,3 +188,14 @@ reference 默认保持 pinned。
 - 需求证明当前不需要某项技术，标记 `NOT REQUIRED NOW`。
 
 “讨论过”“看过源码”或“完成 lesson”本身都不等于 `PRACTICED` 或 `CAN EXPLAIN`。
+
+
+## Teach artifact conventions
+
+The `learning/` directory is treated as the teach workspace root.
+
+- Lessons use `0001-<dash-case-name>.html`, `0002-...` numbering.
+- Learning records use the same four-digit sequential convention.
+- A lesson teaches one tightly-scoped skill and must cite vetted resources from `learning/RESOURCES.md`.
+- Reusable quiz, diagram, simulator, and style code belongs in `learning/assets/`, not duplicated inside lesson files.
+- Learning records capture demonstrated non-obvious learning, not session activity or unfinished checklists.
