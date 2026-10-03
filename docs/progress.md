@@ -64,8 +64,9 @@ Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-
    - 输入：`CreatorReply + campaign_id`；
    - direct lookup interface：已知 next step，整个 Agent Tool protocol 删除；
    - 最小 Campaign rules/context：只保留下游 gate 真正需要的业务规则；
-   - policy gate 输出：明确状态与 reasons；
+   - policy gate 输出：`within_policy / outside_policy / missing_information / human_review` + `reasons`；
    - 明确 deterministic rules 与仍需 semantic judgment 的边界。
+   - 当前 v1 已锁定：`CampaignRules = campaign_id + max_budget + currency + latest_delivery_date`；Campaign 配置缺失在 lookup 层失败，不进入 Policy Gate；`missing_information` 仅表示 CreatorReply 一侧缺少判断所需事实。
 2. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
 3. **Implementation**：vibe coding 实现最薄 lookup interface 与 policy gate；不提前引入真实 Campaign 基础设施。
 4. **Verification**：优先 deterministic tests；需要语义判断的部分才单独设计 eval。
