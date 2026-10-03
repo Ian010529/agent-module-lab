@@ -49,11 +49,10 @@ Slice 2 已完成：`CreatorReply + campaign_id → CampaignRules → PolicyDeci
 
 当前项目状态：
 
-- Schema Validation：已在自己的实现中实践并通过 deterministic tests。
-- Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
-- 普通函数 vs Agent Tool：已在 Slice 2 实现 known-ID direct lookup，整个 Agent Tool protocol 被移除，并通过测试。
-- RAG vs Direct Lookup：known-ID Campaign rules direct lookup 已实现并通过测试；当前没有 RAG 需求。
-- Policy Gate：已实现 budget / currency / delivery / missing / ambiguity checks，并通过 deterministic tests，当前为 PRACTICED。
+- Slice 1 Structured Output / Schema Validation：已完成。
+- Slice 2 Direct Lookup / Policy Gate：已完成并通过 Understanding Check。
+- Slice 3 当前正式学习单元：**decision/routing vs generation + draft vs side effect + grounded/no-commit drafting + reference HITL placement**。
+- 当前还没有进入 Slice 3 Own Design，也没有 Slice 3 实现；下一动作是创建并完成 Lesson 0003 的 Technical Foundation + pinned reference trace。
 
 ## Next step — Slice 3
 
@@ -98,6 +97,13 @@ Slice 2 已完成：`CreatorReply + campaign_id → CampaignRules → PolicyDeci
 - 必要时对照 `src/email_assistant/email_assistant.py` 的非 HITL tool loop。
 
 不引入 `gpt-researcher`、`vanna` 或 `tau2-bench`；它们仍按 `docs/references.md` 的既定阶段使用。
+
+### First action in a new conversation
+
+- Expected lesson path: `learning/lessons/0003-route-before-you-write.html`（尚未创建）。
+- 新对话首先根据本节 Technical Foundation 与 `learning/RESOURCES.md` 创建/开展 Lesson 0003。
+- Lesson 0003 必须以 pinned `agents-from-scratch` 源码为教学主线，并在 learning gate 停止。
+- 在 learning gate 通过前，不定义本项目最终 action schema / draft schema / HITL 架构，也不写 Slice 3 implementation。
 
 ### Learning gate before Own Design
 
