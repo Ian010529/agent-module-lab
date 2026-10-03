@@ -51,11 +51,11 @@ Slice 2 的目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 
 
 - Schema Validation：已在自己的实现中实践并通过 deterministic tests。
 - Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
-- 普通函数 vs Agent Tool：Lesson 0002 learning gate 已通过；已能把 reference 的 Tool Loop 迁移到 Campaign Context，并判断已知 next step 应直接调用普通函数。
-- RAG vs Direct Lookup：当前边界是 known-ID 结构化 Campaign Policy 优先 direct lookup。
-- Policy Gate：已理解 deterministic rule boundary，现进入 own design；尚未实现，因此仍未达到 PRACTICED。
+- 普通函数 vs Agent Tool：已在 Slice 2 实现 known-ID direct lookup，整个 Agent Tool protocol 被移除，并通过测试。
+- RAG vs Direct Lookup：known-ID Campaign rules direct lookup 已实现并通过测试；当前没有 RAG 需求。
+- Policy Gate：已实现 budget / currency / delivery / missing / ambiguity checks，并通过 deterministic tests，当前为 PRACTICED。
 
-## Next step — Slice 2 Own Design
+## Next step — Slice 2 Understanding Check
 
 Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-known-next-step-removes-tool-loop.md`。
 
