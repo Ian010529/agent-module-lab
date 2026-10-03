@@ -17,7 +17,7 @@
 | Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续开放式 action 选择场景再实践 |
-| 普通函数 vs Agent Tool | PRACTICED | 已实现 known-ID Campaign direct lookup，无 Agent Tool protocol，并通过测试 |
+| 普通函数 vs Agent Tool | CAN EXPLAIN | 已实现 known-ID Campaign direct lookup，并能解释何时应重新引入模型 action selection |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
 | Stop Condition | UNDERSTANDING | 已分析 Done termination signal |
 | State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
@@ -30,7 +30,7 @@
 | State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
 | RAG vs Direct Lookup | PRACTICED | known-ID Campaign rules direct lookup 已实现并测试；未引入 RAG |
 | Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
-| Policy Gate | PRACTICED | budget / currency / delivery / missing / ambiguity gate 已实现并通过 deterministic tests |
+| Policy Gate | CAN EXPLAIN | 已实现并测试，能够解释状态优先级、failure boundary 与 redesign triggers |
 | Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
 | Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
@@ -52,7 +52,7 @@
 
 Learning gate 已通过，当前进入设计：
 
-**Campaign Rules direct lookup + deterministic Policy Gate → Understanding Check**
+**Slice 2 complete — Campaign Rules direct lookup + deterministic Policy Gate**
 
 对应 teach lesson：
 
