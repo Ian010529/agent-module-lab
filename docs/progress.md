@@ -44,12 +44,9 @@ Creator Outreach / Reply Copilot
 
 ## Next step
 
-1. **Real-model verification**：选择一个实际模型/provider 后，对 7 个保留案例运行真实 structured extraction。
-3. 对比 expected outputs，区分：
-   - schema validity；
-   - extraction correctness；
-   - prompt/schema 需要修改的 failure。
-4. 通过真实模型验收后，完成本 Slice 的 understanding check，并决定是否进入下一个项目 Slice。
+1. 完成本 Slice 的简短复盘：确认能够解释为什么 semantic extraction、schema validation 与 deterministic business rules 要分层。
+2. 保留当前 7 个验收案例作为 regression set；以后修改 prompt/schema 时必须重跑。
+3. 根据 `docs/project-scope.md` 与当前主流程确定下一 Slice；只有项目需求触发时才创建下一 lesson。
 
 ## Not decided yet
 
