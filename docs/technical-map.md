@@ -50,29 +50,50 @@
 
 ## 当前技术单元
 
-正在进入新的业务 Slice：
-
 **Slice 3 — Next Action Recommendation + Safe Reply Draft**
 
 当前阶段：**Technical Foundation + pinned reference trace**
 
-对应 teach lesson：
+当前还没有 Slice 3 lesson 文件。新对话的第一动作是创建/开展：
 
-`learning/lessons/0002-known-next-step-is-not-a-tool.html`
+`learning/lessons/0003-route-before-you-write.html`
 
-当前 reference trace：
+### 当前要学的技术边界
 
-- `reference/agents-from-scratch/src/email_assistant/tools/base.py`
-- `reference/agents-from-scratch/src/email_assistant/email_assistant_hitl.py`
-- `reference/agents-from-scratch/src/email_assistant/email_assistant.py`
+只学习足以让用户进入 Own Design 的内容：
 
-当前结论：
+- **Decision / routing vs generation**：已有结构化状态能确定的 control flow，不默认再让 LLM 猜；需要自然语言表达的部分才进入 generation。
+- **Draft vs side effect**：生成回复文本与执行 `write_email` / 真实发送是不同权限层。
+- **Grounded / no-commit drafting**：只使用已有事实和授权信息；缺失事实必须保持未知、请求澄清或转人工，不能由模型补全。
+- **HITL placement**：理解 reference 为什么在 side-effectful action 执行前 interrupt；本项目最终是否以及如何采用 HITL，留到 Own Design。
 
-- 已知 `campaign_id` 且下一步固定为查询 Campaign Policy 时，优先 direct lookup / 普通函数，而不是让 LLM 重新选择 Tool。
-- 外部 I/O 与 Agent Tool 不是同一个概念；普通函数也可以访问 API / DB。
-- Campaign Policy 与 Creator Reply 的明确规则比较应由 deterministic code 完成。
-- Lesson 0002 transfer gate 已通过：对于 `CreatorReply + campaign_id` 且 lookup 为固定 next step 的场景，整个 Agent Tool protocol 删除，直接调用 application function / API。
-- 用户已能列举适合 deterministic gate 的规则类型（allowed currency、required missingness、numeric threshold、enum/allowed-set membership）；`Policy Gate` 已在自己的实现中落地并通过测试，当前为 `PRACTICED`，是否进入 `CAN EXPLAIN` 取决于 Understanding Check。
+### 当前 pinned reference trace
+
+仍只使用 `reference/agents-from-scratch` @ `603fc7a4ac6119004f43894395e504a1fefcc6c0`：
+
+- `src/email_assistant/prompts.py`
+- `src/email_assistant/tools/default/email_tools.py`
+- `src/email_assistant/email_assistant_hitl.py`
+- 必要时对照 `src/email_assistant/email_assistant.py`
+
+当前不引入 `gpt-researcher`、`vanna` 或 `tau2-bench`。
+
+### Learning gate
+
+进入 Own Design 前，用户需要能脱离答案解释：
+
+- 为什么 routing 与 language generation 可以分层；
+- reference 的 `write_email` 为什么是 side-effectful Tool，而“只生成 draft”不是同一件事；
+- HITL 在 reference 中具体拦截哪一层；
+- 已有 PolicyDecision 时，哪些 next-step control 不需要 LLM 再猜；
+- grounded draft 中哪些事实可以写、哪些未知必须保留未知/澄清；
+- 什么条件出现时需要重新考虑 Tool / HITL / workflow 设计。
+
+通过 gate 后才进入用户 Own Design → tests/eval → vibe coding → verification → understanding check → state update。
+
+### Previous completed unit
+
+Slice 2 的 Campaign Rules direct lookup + deterministic Policy Gate 已完成并收口；对应 Lesson 0002、decision 0002 与 learning records 0005/0006 保留为历史记录。
 
 ## 技术状态更新原则
 
