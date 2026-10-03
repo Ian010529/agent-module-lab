@@ -38,14 +38,13 @@ Creator Outreach / Reply Copilot
 
 当前项目状态：
 
-- Schema Validation：已在自己的实现中实践并通过 deterministic tests。
+- Schema Validation：已在自己的实现中实践并通过 deterministic tests；关键 range cross-field validator 已完成理解检查。
 - Structured Output：自己的 `with_structured_output` 接口已经实现并使用 fake model 验证；尚未接真实模型/provider。
 - Semantic extraction correctness：尚未跑真实模型，因此不能根据当前 15 个测试声称已验证。
 
 ## Next step
 
-1. **Code review / walkthrough**：确认你能解释 schema 中最关键的设计与 validator。
-2. **Real-model verification**：选择一个实际模型/provider 后，对 7 个保留案例运行真实 structured extraction。
+1. **Real-model verification**：选择一个实际模型/provider 后，对 7 个保留案例运行真实 structured extraction。
 3. 对比 expected outputs，区分：
    - schema validity；
    - extraction correctness；
