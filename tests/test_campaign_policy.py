@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from campaign_policy.gate import evaluate_policy
+from campaign_policy.gate import evaluate_campaign_policy, evaluate_policy
 from campaign_policy.lookup import CampaignRulesLookupError, lookup_campaign_rules
 from campaign_policy.schemas import CampaignRules
 from creator_reply.schemas import CreatorReply, Delivery, Quote
@@ -428,3 +428,31 @@ def test_policy_gate_does_not_route_on_interest():
     )
 
     assert evaluate_policy(reply, RULES).status == "within_policy"
+
+
+def test_evaluate_campaign_policy_connects_direct_lookup_to_gate():
+    records = {
+        "cmp-001": {
+            "max_budget": 1500,
+            "currency": "USD",
+            "latest_delivery_date": date(2026, 11, 30),
+        }
+    }
+    reply = reply_with(
+        quotes=[current_quote(amount=1200)],
+        delivery=exact_delivery(date(2026, 11, 20)),
+    )
+
+    decision = evaluate_campaign_policy(reply, "cmp-001", records.get)
+
+    assert decision.status == "within_policy"
+
+
+def test_evaluate_campaign_policy_stops_on_lookup_failure():
+    reply = reply_with(
+        quotes=[current_quote(amount=1200)],
+        delivery=exact_delivery(date(2026, 11, 20)),
+    )
+
+    with pytest.raises(CampaignRulesLookupError, match="campaign_not_found"):
+        evaluate_campaign_policy(reply, "missing", {}.get)
