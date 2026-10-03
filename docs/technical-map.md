@@ -17,7 +17,7 @@
 | Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续开放式 action 选择场景再实践 |
-| 普通函数 vs Agent Tool | UNDERSTANDING | Slice 2 Lesson 0002 正在验证 Campaign policy 查询边界 |
+| 普通函数 vs Agent Tool | UNDERSTANDING | Lesson 0002 gate 已通过；已迁移到 Campaign lookup 的 direct-call 边界，待项目实现验证 |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
 | Stop Condition | UNDERSTANDING | 已分析 Done termination signal |
 | State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
@@ -28,9 +28,9 @@
 | Context Minimization | UNDERSTANDING | 已确定按当前 decision 获取最少必要上下文 |
 | Business Data vs Context | UNDERSTANDING | 已通过 campaign policy / creator history 案例区分 |
 | State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
-| RAG vs Direct Lookup | UNDERSTANDING | 已确定 known-ID 结构化事实优先 API/DB；Slice 2 将实践 |
+| RAG vs Direct Lookup | UNDERSTANDING | known-ID Campaign 规则采用 direct lookup；待 Slice 2 实现与测试后再评估 PRACTICED |
 | Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
-| Policy Gate | NOT STARTED | Slice 2 learning gate 后进入 own design / implementation |
+| Policy Gate | UNDERSTANDING | 已能识别 threshold / missing / allowed-set 等 deterministic checks；现进入 own design |
 | Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
 | Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
@@ -50,9 +50,9 @@
 
 ## 当前技术单元
 
-正在验证：
+Learning gate 已通过，当前进入设计：
 
-**Direct Lookup / 普通函数 vs Agent Tool → Campaign Context boundary**
+**Campaign Context direct lookup + deterministic Policy Gate → Own Design**
 
 对应 teach lesson：
 
@@ -69,8 +69,8 @@
 - 已知 `campaign_id` 且下一步固定为查询 Campaign Policy 时，优先 direct lookup / 普通函数，而不是让 LLM 重新选择 Tool。
 - 外部 I/O 与 Agent Tool 不是同一个概念；普通函数也可以访问 API / DB。
 - Campaign Policy 与 Creator Reply 的明确规则比较应由 deterministic code 完成。
-- 上述边界尚需通过 Lesson 0002 transfer gate；通过 gate 本身仍不等于 `PRACTICED`。
-- `Policy Gate` 只有在自己的实现中落地并通过测试后才能进入 `PRACTICED`。
+- Lesson 0002 transfer gate 已通过：对于 `CreatorReply + campaign_id` 且 lookup 为固定 next step 的场景，整个 Agent Tool protocol 删除，直接调用 application function / API。
+- 用户已能列举适合 deterministic gate 的规则类型（allowed currency、required missingness、numeric threshold、enum/allowed-set membership）；`Policy Gate` 仍只有在自己的实现中落地并通过测试后才能进入 `PRACTICED`。
 
 ## 技术状态更新原则
 
