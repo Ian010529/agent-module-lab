@@ -133,6 +133,9 @@ p code, li code {
   font-size: .95rem;
   min-height: 46px;
   background: var(--paper);
+  color: var(--ink);
+  -webkit-text-fill-color: var(--ink);
+  appearance: none;
   border: 1px solid #b9b6ae;
   cursor: pointer;
   padding: 10px 12px;
