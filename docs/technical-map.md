@@ -17,7 +17,7 @@
 | Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续开放式 action 选择场景再实践 |
-| 普通函数 vs Agent Tool | UNDERSTANDING | Lesson 0002 gate 已通过；已迁移到 Campaign lookup 的 direct-call 边界，待项目实现验证 |
+| 普通函数 vs Agent Tool | PRACTICED | 已实现 known-ID Campaign direct lookup，无 Agent Tool protocol，并通过测试 |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
 | Stop Condition | UNDERSTANDING | 已分析 Done termination signal |
 | State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
@@ -25,12 +25,12 @@
 | LangGraph | UNDERSTANDING | 只理解当前参考实现；是否用于最终实现尚未决定 |
 | HITL | UNDERSTANDING | 已分析业务判断与执行审批两类 HITL |
 | Interrupt / Checkpoint / Resume | UNDERSTANDING | 已追踪参考项目暂停恢复机制 |
-| Context Minimization | UNDERSTANDING | 已确定按当前 decision 获取最少必要上下文 |
-| Business Data vs Context | UNDERSTANDING | 已通过 campaign policy / creator history 案例区分 |
+| Context Minimization | PRACTICED | CampaignRules 仅保留 budget / currency / delivery deadline 等 gate 所需规则 |
+| Business Data vs Context | PRACTICED | 已将 Campaign business data 经 lookup boundary 收敛为最小 CampaignRules |
 | State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
-| RAG vs Direct Lookup | UNDERSTANDING | known-ID Campaign 规则采用 direct lookup；待 Slice 2 实现与测试后再评估 PRACTICED |
+| RAG vs Direct Lookup | PRACTICED | known-ID Campaign rules direct lookup 已实现并测试；未引入 RAG |
 | Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
-| Policy Gate | UNDERSTANDING | 已能识别 threshold / missing / allowed-set 等 deterministic checks；现进入 own design |
+| Policy Gate | PRACTICED | budget / currency / delivery / missing / ambiguity gate 已实现并通过 deterministic tests |
 | Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
 | Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
@@ -52,7 +52,7 @@
 
 Learning gate 已通过，当前进入设计：
 
-**Campaign Context direct lookup + deterministic Policy Gate → Own Design**
+**Campaign Rules direct lookup + deterministic Policy Gate → Understanding Check**
 
 对应 teach lesson：
 
