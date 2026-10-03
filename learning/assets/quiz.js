@@ -1,6 +1,12 @@
 (() => {
   const answeredCorrectly = new Set();
 
+  function currentLessonLabel() {
+    const kicker = document.querySelector('.lesson-kicker')?.textContent || '';
+    const match = kicker.match(/Lesson\s+\d+/i);
+    return match ? match[0] : 'Lesson';
+  }
+
   function refreshGate() {
     document.querySelectorAll('[data-gate]').forEach((gate) => {
       const ids = [...gate.querySelectorAll('[data-quiz-id]')].map((q) => q.dataset.quizId);
@@ -8,7 +14,8 @@
       const passed = ids.length > 0 && ids.every((id) => answeredCorrectly.has(id));
       if (!status) return;
       if (passed) {
-        status.textContent = 'Gate passed — tell your teacher “Lesson 0001 gate passed”.';
+        const label = currentLessonLabel();
+        status.textContent = `Gate passed — tell your teacher “${label} gate passed”.`;
         status.classList.add('passed');
       } else {
         const done = ids.filter((id) => answeredCorrectly.has(id)).length;
@@ -34,7 +41,7 @@
         } else {
           button.classList.add('wrong');
           answeredCorrectly.delete(id);
-          if (feedback) feedback.textContent = 'Not yet. Re-read the boundary above, then try again.';
+          if (feedback) feedback.textContent = 'Not yet. Re-read the source trace above, then try again.';
         }
         refreshGate();
       });
