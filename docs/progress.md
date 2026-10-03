@@ -6,11 +6,13 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-第一段 Creator Reply Extraction 已完成真实模型验证，当前 Slice 收口。
+**Slice 1 — Creator Reply Extraction 已完成并收口。**
 
-当前技术单元：
+下一阶段固定为：
 
-**Structured Output + Schema Validation → Creator Reply Extraction**
+**Slice 2 — Campaign Context + Policy Gate**
+
+目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 对应的业务规则连接起来，使用 direct lookup 获取最少必要 Campaign Context，再用 deterministic policy checks 判断是否在规则内、是否缺信息或是否需要人工处理。
 
 ## Completed
 
@@ -42,11 +44,22 @@ Creator Outreach / Reply Copilot
 - Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
 - Semantic extraction correctness：真实模型验收已通过当前保留测试集；后续仍需在更多真实回复上持续观察。
 
-## Next step
+## Next step — Slice 2
 
-1. 完成本 Slice 的简短复盘：确认能够解释为什么 semantic extraction、schema validation 与 deterministic business rules 要分层。
-2. 保留当前 7 个验收案例作为 regression set；以后修改 prompt/schema 时必须重跑。
-3. 根据 `docs/project-scope.md` 与当前主流程确定下一 Slice；只有项目需求触发时才创建下一 lesson。
+按 `docs/workspace-guide.md` 的 Slice 协议进入 **Campaign Context + Policy Gate**：
+
+1. **Technical foundation**：学习“已知下一步 lookup 时 direct lookup / 普通函数 vs Agent Tool”的边界，只覆盖当前 Slice 真正需要的部分。
+2. **Reference implementation**：从 pinned reference 中寻找与 context retrieval、tool boundary、deterministic routing 直接相关的实现；不机械复制架构。
+3. **Own design**：
+   - 输入：`CreatorReply + campaign_id`；
+   - direct lookup：根据 `campaign_id` 获取最少必要 Campaign Policy；
+   - deterministic policy gate：判断报价、币种、deliverable / usage 条件等是否满足已知规则；
+   - 输出只区分当前需要的状态，例如 `within_policy / missing_information / human_review` 与 reasons。
+4. **Tests first**：为正常、缺 policy 信息、超预算、usage 超范围、币种不匹配等案例建立固定测试。
+5. **Vibe coding**：实现最薄的 context lookup interface 与 policy gate。
+6. **Verification**：优先 deterministic tests；只有需要语义判断的地方才使用 LLM/eval。
+
+当前不引入 RAG、Memory、Multi-Agent、MCP、Tool Registry、Redis 或 Queue，除非 Slice 2 的实际需求证明必要。
 
 ## Not decided yet
 
