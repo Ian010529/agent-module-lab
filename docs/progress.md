@@ -6,13 +6,15 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-**Slice 1 — Creator Reply Extraction 已完成并收口。**
+**Slice 2 — Campaign Context + Policy Gate 已开始。**
 
-下一阶段固定为：
+当前步骤：
 
-**Slice 2 — Campaign Context + Policy Gate**
+**Technical foundation + reference trace — Lesson 0002: direct lookup / 普通函数 vs Agent Tool**
 
-目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 对应的业务规则连接起来，使用 direct lookup 获取最少必要 Campaign Context，再用 deterministic policy checks 判断是否在规则内、是否缺信息或是否需要人工处理。
+Slice 1 — Creator Reply Extraction 已完成并收口。
+
+Slice 2 的目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 对应的业务规则连接起来，使用 direct lookup 获取最少必要 Campaign Context，再用 deterministic policy checks 判断是否在规则内、是否缺信息或是否需要人工处理。
 
 ## Completed
 
@@ -31,8 +33,14 @@ Creator Outreach / Reply Copilot
   - `src/creator_reply/extractor.py`：使用 `with_structured_output(CreatorReply)` 的薄适配层，不锁定具体模型提供商；
   - `tests/reply_extraction_cases.json`：7 个保留验收案例。
 - 已在隔离环境运行 pytest：**15 passed**。
+- 已完成真实模型验收。
 - 实现过程中发现并修复了 `Delivery.date` 与 Python `datetime.date` 的命名冲突，改为 `normalized_date`。
 - 关键 schema 决策记录在 `docs/decisions/0001-reply-extraction-schema.md`。
+- Slice 2 已完成开场 reference 定位：
+  - `tools/base.py`：应用代码先决定允许暴露哪些 Tools；
+  - `email_assistant_hitl.py`：LLM 在受控 Tool 集合中产生 `tool_calls`，程序执行或进入 HITL；
+  - `email_assistant.py`：模型结果已知后由 deterministic `if / elif` 决定路由。
+- 已创建 `learning/lessons/0002-known-next-step-is-not-a-tool.html`，用于 Slice 2 learning gate。
 
 ## Current technical focus
 
@@ -40,24 +48,24 @@ Creator Outreach / Reply Copilot
 
 当前项目状态：
 
-- Schema Validation：已在自己的实现中实践并通过 deterministic tests；关键 range cross-field validator 已完成理解检查。
+- Schema Validation：已在自己的实现中实践并通过 deterministic tests。
 - Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
-- Semantic extraction correctness：真实模型验收已通过当前保留测试集；后续仍需在更多真实回复上持续观察。
+- 普通函数 vs Agent Tool：已有基础理解；当前通过 Lesson 0002 验证能否把边界迁移到 Campaign Context。
+- RAG vs Direct Lookup：当前边界是 known-ID 结构化 Campaign Policy 优先 direct lookup。
+- Policy Gate：尚未进入 own design / implementation。
 
-## Next step — Slice 2
+## Next step — Slice 2 learning gate
 
-按 `docs/workspace-guide.md` 的 Slice 协议进入 **Campaign Context + Policy Gate**：
+严格按 `docs/workspace-guide.md` 推进：
 
-1. **Technical foundation**：学习“已知下一步 lookup 时 direct lookup / 普通函数 vs Agent Tool”的边界，只覆盖当前 Slice 真正需要的部分。
-2. **Reference implementation**：从 pinned reference 中寻找与 context retrieval、tool boundary、deterministic routing 直接相关的实现；不机械复制架构。
-3. **Own design**：
-   - 输入：`CreatorReply + campaign_id`；
-   - direct lookup：根据 `campaign_id` 获取最少必要 Campaign Policy；
-   - deterministic policy gate：判断报价、币种、deliverable / usage 条件等是否满足已知规则；
-   - 输出只区分当前需要的状态，例如 `within_policy / missing_information / human_review` 与 reasons。
-4. **Tests first**：为正常、缺 policy 信息、超预算、usage 超范围、币种不匹配等案例建立固定测试。
-5. **Vibe coding**：实现最薄的 context lookup interface 与 policy gate。
-6. **Verification**：优先 deterministic tests；只有需要语义判断的地方才使用 LLM/eval。
+1. 完成 `learning/lessons/0002-known-next-step-is-not-a-tool.html`。
+2. 在对话中完成 lesson 最后的 transfer question：
+   - `CreatorReply + campaign_id → ? → Campaign Policy → ? → status` 两个步骤分别是什么；
+   - 什么条件变化后才值得把 Campaign 查询暴露成 Agent Tool。
+3. 通过 learning gate 后，新增对应 `learning/learning-records/`；没有通过前不提前写 Slice 2 实现。
+4. **Own design**：定义最小 Campaign Policy 输入/输出、lookup interface、policy gate 状态和边界。
+5. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
+6. **Implementation + verification**：实现最薄 direct lookup interface 与 deterministic policy gate，并运行测试。
 
 当前不引入 RAG、Memory、Multi-Agent、MCP、Tool Registry、Redis 或 Queue，除非 Slice 2 的实际需求证明必要。
 
