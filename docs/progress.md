@@ -6,11 +6,11 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-**Slice 2 — Campaign Context + Policy Gate 已开始。**
+**Slice 2 — Campaign Context + Policy Gate 已完成并收口。**
 
 当前步骤：
 
-**Implementation + verification complete — Understanding Check pending**
+**Slice 2 complete — next Slice not selected yet**
 
 Slice 1 — Creator Reply Extraction 已完成并收口。
 
@@ -55,9 +55,9 @@ Slice 2 的目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 
 - RAG vs Direct Lookup：known-ID Campaign rules direct lookup 已实现并通过测试；当前没有 RAG 需求。
 - Policy Gate：已实现 budget / currency / delivery / missing / ambiguity checks，并通过 deterministic tests，当前为 PRACTICED。
 
-## Next step — Slice 2 Understanding Check
+## Next step
 
-Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-known-next-step-removes-tool-loop.md`。
+Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-known-next-step-removes-tool-loop.md`；Understanding Check 记录见 `learning/learning-records/0006-slice2-policy-gate-can-be-explained.md`。
 
 严格按 `docs/workspace-guide.md` 继续：
 
@@ -77,7 +77,11 @@ Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-
    - `lookup.py`：已知 `campaign_id` 的 direct lookup + validation；
    - `gate.py`：deterministic policy checks + `evaluate_campaign_policy` 主入口。
 4. **Verification**：从当前 GitHub 文件内容在隔离环境复现并运行 pytest，**46 passed**（Slice 2 新测试 + Slice 1 regressions）。
-5. **Understanding check**：当前唯一剩余步骤。需要能够解释当前设计、为什么不用 Agent Tool、status priority、lookup/gate failure boundary，以及什么条件出现时应重新设计。
+5. **Understanding check**：已通过。用户能够解释：
+   - 为什么 known-ID lookup 不需要 Agent Tool；
+   - Campaign 配置缺失与 CreatorReply 缺信息的边界；
+   - `outside_policy > human_review > missing_information > within_policy` 的状态优先级及保留全部 reasons 的原因；
+   - 当上游 schema 不足或 next step 不再固定时应重新设计。
 
 当前不引入 RAG、Memory、Multi-Agent、MCP、Tool Registry、Redis 或 Queue，除非 Slice 2 的实际需求证明必要。
 
@@ -93,3 +97,10 @@ Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-
 - 是否需要动态 Tool Registry / Tool Retrieval
 
 这些内容都必须由实际需求触发，不能因为参考仓库使用或技术上“可以做”就提前引入，也不提前为其创建 lesson。
+
+
+### Slice 2 closure
+
+Slice 2 已完成 technical foundation、reference trace、learning gate、own design、tests-first、implementation、verification 与 understanding check。
+
+下一 Slice 尚未在仓库中预先定义。后续应从 `docs/project-scope.md` 的 Creator Outreach / Reply Copilot 剩余业务能力中选择，再按 `docs/workspace-guide.md` 的固定协议启动；不要因为现有 reference 里有其他能力就自动进入下一技术。
