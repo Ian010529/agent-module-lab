@@ -1,0 +1,136 @@
+[
+  {
+    "name": "exact_current_quote",
+    "reply": "Yes, I'd love to collaborate. My rate for one TikTok is £1200.",
+    "expected": {
+      "interest": "interested",
+      "quotes": [
+        {
+          "currency": "GBP",
+          "conditions": "one TikTok video",
+          "quote_basis": "current_quote",
+          "amount_type": "exact",
+          "amount": 1200,
+          "min_amount": null,
+          "max_amount": null
+        }
+      ],
+      "delivery": null
+    }
+  },
+  {
+    "name": "usual_approximate_missing_currency",
+    "reply": "I'd be interested. I usually charge around 1500 for TikTok, depending on usage rights.",
+    "expected": {
+      "interest": "interested",
+      "quotes": [
+        {
+          "currency": null,
+          "conditions": "TikTok; depends on usage rights",
+          "quote_basis": "usual_rate",
+          "amount_type": "approximate",
+          "amount": 1500,
+          "min_amount": null,
+          "max_amount": null
+        }
+      ],
+      "delivery": null
+    }
+  },
+  {
+    "name": "range_quote",
+    "reply": "I usually charge between £1000 and £1500 for TikTok depending on usage.",
+    "expected": {
+      "interest": "unclear",
+      "quotes": [
+        {
+          "currency": "GBP",
+          "conditions": "TikTok depending on usage",
+          "quote_basis": "usual_rate",
+          "amount_type": "range",
+          "amount": null,
+          "min_amount": 1000,
+          "max_amount": 1500
+        }
+      ],
+      "delivery": null
+    }
+  },
+  {
+    "name": "multiple_conditional_quotes_and_deadline",
+    "reply": "I'm definitely interested. For one TikTok video my rate would be £1200. If you also want 3 months paid usage, it would be £1600. I can deliver by 20 October 2026.",
+    "expected": {
+      "interest": "interested",
+      "quotes": [
+        {
+          "currency": "GBP",
+          "conditions": "one TikTok video",
+          "quote_basis": "current_quote",
+          "amount_type": "exact",
+          "amount": 1200,
+          "min_amount": null,
+          "max_amount": null
+        },
+        {
+          "currency": "GBP",
+          "conditions": "one TikTok video + 3 months paid usage",
+          "quote_basis": "current_quote",
+          "amount_type": "exact",
+          "amount": 1600,
+          "min_amount": null,
+          "max_amount": null
+        }
+      ],
+      "delivery": {
+        "delivery_type": "deadline",
+        "normalized_date": "2026-10-20",
+        "start_date": null,
+        "end_date": null,
+        "raw_text": "by 20 October 2026"
+      }
+    }
+  },
+  {
+    "name": "rejection_no_quote",
+    "reply": "Thanks, but I'm not taking on new partnerships right now.",
+    "expected": {
+      "interest": "not_interested",
+      "quotes": null,
+      "delivery": null
+    }
+  },
+  {
+    "name": "approximate_delivery",
+    "reply": "I'm interested. I should be able to deliver sometime next month.",
+    "expected": {
+      "interest": "interested",
+      "quotes": null,
+      "delivery": {
+        "delivery_type": "approximate",
+        "normalized_date": null,
+        "start_date": null,
+        "end_date": null,
+        "raw_text": "sometime next month"
+      }
+    }
+  },
+  {
+    "name": "starting_from_quote",
+    "reply": "For this campaign, I can start at $1000 for one Reel.",
+    "expected": {
+      "interest": "unclear",
+      "quotes": [
+        {
+          "currency": "USD",
+          "conditions": "one Reel",
+          "quote_basis": "current_quote",
+          "amount_type": "starting_from",
+          "amount": 1000,
+          "min_amount": null,
+          "max_amount": null
+        }
+      ],
+      "delivery": null
+    }
+  }
+]

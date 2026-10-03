@@ -13,9 +13,9 @@
 | 技术 | 当前状态 | 当前/计划中的项目落点 |
 |---|---|---|
 | Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
-| LLM Messages / Prompt | NOT STARTED | Reply extraction |
-| Structured Output | UNDERSTANDING | 当前 lesson：Reply extraction；尚未项目实践 |
-| Schema Validation | UNDERSTANDING | 当前 lesson：Reply extraction；尚未项目实践 |
+| LLM Messages / Prompt | UNDERSTANDING | 已为 Reply Extraction 编写 no-guess extraction prompt；真实模型效果待验证 |
+| Structured Output | UNDERSTANDING | 已实现 `with_structured_output(CreatorReply)` 适配并用 fake model 测试；真实 provider 待验证 |
+| Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续 Context / Tool layer 实践 |
 | 普通函数 vs Agent Tool | UNDERSTANDING | Campaign policy 查询边界 |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
@@ -31,7 +31,7 @@
 | RAG vs Direct Lookup | UNDERSTANDING | 已确定 known-ID 结构化事实优先 API/DB |
 | Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
 | Policy Gate | NOT STARTED | 报价规则切片 |
-| Deterministic Evaluation | UNDERSTANDING | 已分析 triage exact-match 与业务规则评测 |
+| Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
 | Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
 | LLM-as-a-Judge | UNDERSTANDING | 已了解适用范围；尚未在本项目实践 |
@@ -50,7 +50,7 @@
 
 ## 当前技术单元
 
-正在进行：
+正在验证：
 
 **Structured Output + Schema Validation → Reply Extraction**
 
@@ -58,20 +58,17 @@
 
 `learning/lessons/0001-schema-is-a-contract.html`
 
-对应 learning record：
+当前实现：
 
-`learning/learning-records/0001-creator-reply-facts-carry-semantics.md`
+- `src/creator_reply/schemas.py`
+- `src/creator_reply/extractor.py`
+- `tests/reply_extraction_cases.json`
 
-当前已进入 `UNDERSTANDING`，但尚未达到 `PRACTICED`。
+当前结论：
 
-完成标准不是“看完 lesson”或“代码能运行”，而是至少能够：
-
-- 解释为什么该任务适合 structured output；
-- 设计输出 schema；
-- 区分模型语义提取与 deterministic validation；
-- 处理缺字段、模糊报价、多个报价条件、格式异常等失败情况；
-- 区分 schema validity 与 semantic correctness；
-- 用固定测试案例验证提取结果。
+- Schema Validation 已达到 `PRACTICED`。
+- Structured Output 仍保持 `UNDERSTANDING`，因为目前只用 fake model 验证接口与 schema wiring，还没有真实模型输出的证据。
+- 不能把 deterministic test 通过当成 semantic extraction correctness 已验证。
 
 ## 技术状态更新原则
 

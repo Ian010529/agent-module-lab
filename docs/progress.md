@@ -6,70 +6,57 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-第一段实际 Slice 已完成当前 teach learning gate，进入 Own Design。
+第一段 Creator Reply Extraction 已完成 Own Design 和第一版 vibe coding，进入 Verification。
 
-当前正在学习：
+当前技术单元：
 
 **Structured Output + Schema Validation → Creator Reply Extraction**
-
-teach 学习工作区已经建立在 `learning/`；当前 lesson 为：
-
-`learning/lessons/0001-schema-is-a-contract.html`
 
 ## Completed
 
 - 已确定项目目标与开发边界，见 `docs/project-scope.md`。
 - 已将 4 个外部项目以 pinned Git submodule 形式加入 `reference/`，具体版本见 `docs/references.md`。
 - 已追踪 `agents-from-scratch` HITL 版本的完整主链：输入 → triage → response agent → tool decision → HITL / direct tool execution → resume → completion。
-- 已确认参考实现的 State 由业务输入、classification decision 与消息轨迹组成。
-- 已确认 HITL 暂停/恢复依赖 checkpoint 与 execution identity（thread id）。
-- 已确认参考仓库自动化评测覆盖 triage、tool calling 和 response quality，但现有测试并没有完整覆盖 HITL 版本。
-- 已通过达人报价案例初步形成设计边界：
-  - 语义理解 / 报价提取适合 LLM；
-  - 确定性金额比较适合 CODE；
-  - 已知 campaign policy 优先通过现有业务接口获取；
-  - 只取得当前 decision 需要的最少上下文；
-  - 商务判断与对外执行审批可以是不同的 HITL；
-  - 已知下一步必须调用哪个接口时，不需要为了 Agent 化而让模型选择 Tool。
-- Structured Output / Schema Validation 已进入正式学习：
-  - 已讨论 structured output、schema、Literal、可空字段、nested model；
-  - 已讨论 missing / ambiguous / false precision；
-  - 已区分 semantic extraction 与 deterministic validation；
-  - 已读取 reference 中 RouterSchema → with_structured_output → classification → deterministic routing → eval 的主链。
-- 已建立单仓库 teach 工作区，并创建当前 lesson、reference cheat sheet 和进行中的 learning record。
+- 已通过 Lesson 0001 retrieval gate，能够区分 semantic error、schema/type error 与 deterministic business-rule check。
+- 已完成 Creator Reply Extraction 第一版业务边界设计：
+  - 顶层只保留 `interest / quotes / delivery`；
+  - Quote 分离 `quote_basis`、`amount_type` 与 `conditions`；
+  - `quotes=None` 明确表示邮件没有报价信息；
+  - currency 缺失保持 `None`，明确货币标准化为三字母代码；
+  - approximate delivery 保留 `raw_text`，禁止制造假日期。
+- 已完成第一版实现：
+  - `src/creator_reply/schemas.py`：Pydantic schema 与 cross-field validation；
+  - `src/creator_reply/extractor.py`：使用 `with_structured_output(CreatorReply)` 的薄适配层，不锁定具体模型提供商；
+  - `tests/reply_extraction_cases.json`：7 个保留验收案例。
+- 已在隔离环境运行 pytest：**15 passed**。
+- 实现过程中发现并修复了 `Delivery.date` 与 Python `datetime.date` 的命名冲突，改为 `normalized_date`。
+- 关键 schema 决策记录在 `docs/decisions/0001-reply-extraction-schema.md`。
 
 ## Current technical focus
 
 完整状态见 `docs/technical-map.md`。
 
-当前技术单元：
+当前项目状态：
 
-**Structured Output + Schema Validation**
-
-当前状态：
-
-**UNDERSTANDING，Lesson 0001 gate passed；尚未 PRACTICED**
-
-项目落点：
-
-**Creator Reply → structured extraction**
+- Schema Validation：已在自己的实现中实践并通过 deterministic tests。
+- Structured Output：自己的 `with_structured_output` 接口已经实现并使用 fake model 验证；尚未接真实模型/provider。
+- Semantic extraction correctness：尚未跑真实模型，因此不能根据当前 15 个测试声称已验证。
 
 ## Next step
 
-当前 Slice 按 `docs/workspace-guide.md` 执行：
-
-1. **Own Design**：根据 Creator Reply 的真实需求定义 extraction 输入、输出 schema 与 failure handling，不复制 RouterSchema。
-2. **建立测试案例**：正常、缺字段、模糊报价、多个报价条件、格式异常等固定案例。
-3. **Implementation**：使用 vibe coding 完成 Reply Extraction slice。
-4. **Verification**：运行正常与 failure cases，区分 schema validity 与 extraction correctness。
-5. 完成理解检查后，再判断 Structured Output / Schema Validation 是否可更新为 `PRACTICED`，并进入下一 Slice。
+1. **Code review / walkthrough**：确认你能解释 schema 中最关键的设计与 validator。
+2. **Real-model verification**：选择一个实际模型/provider 后，对 7 个保留案例运行真实 structured extraction。
+3. 对比 expected outputs，区分：
+   - schema validity；
+   - extraction correctness；
+   - prompt/schema 需要修改的 failure。
+4. 通过真实模型验收后，完成本 Slice 的 understanding check，并决定是否进入下一个项目 Slice。
 
 ## Not decided yet
 
 以下内容仍未做最终技术选择：
 
 - 是否使用 LangGraph 作为最终编排框架
-- 是否需要持久化 workflow state
 - HITL 在本项目中的具体持久化实现
 - 是否需要长期 Memory
 - 是否需要 RAG
