@@ -1,4 +1,4 @@
-from .gate import evaluate_policy
+from .gate import evaluate_campaign_policy, evaluate_policy
 from .lookup import CampaignRulesLookupError, lookup_campaign_rules
 from .schemas import CampaignRules, PolicyDecision, PolicyStatus
 
@@ -7,6 +7,7 @@ __all__ = [
     "CampaignRulesLookupError",
     "PolicyDecision",
     "PolicyStatus",
+    "evaluate_campaign_policy",
     "evaluate_policy",
     "lookup_campaign_rules",
 ]
