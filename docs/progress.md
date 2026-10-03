@@ -6,7 +6,7 @@ Creator Outreach / Reply Copilot
 
 ## Current phase
 
-第一段 Creator Reply Extraction 已完成 Own Design 和第一版 vibe coding，进入 Verification。
+第一段 Creator Reply Extraction 已完成真实模型验证，当前 Slice 收口。
 
 当前技术单元：
 
@@ -39,8 +39,8 @@ Creator Outreach / Reply Copilot
 当前项目状态：
 
 - Schema Validation：已在自己的实现中实践并通过 deterministic tests；关键 range cross-field validator 已完成理解检查。
-- Structured Output：自己的 `with_structured_output` 接口已经实现并使用 fake model 验证；尚未接真实模型/provider。
-- Semantic extraction correctness：尚未跑真实模型，因此不能根据当前 15 个测试声称已验证。
+- Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
+- Semantic extraction correctness：真实模型验收已通过当前保留测试集；后续仍需在更多真实回复上持续观察。
 
 ## Next step
 
