@@ -95,6 +95,15 @@ def test_exact_current_quote_within_budget_and_delivery_deadline_is_within_polic
     assert decision.reasons == []
 
 
+def test_exact_current_quote_at_budget_limit_is_within_policy():
+    reply = reply_with(
+        quotes=[current_quote(amount=1500)],
+        delivery=exact_delivery(date(2026, 11, 20)),
+    )
+
+    assert evaluate_policy(reply, RULES).status == "within_policy"
+
+
 def test_exact_current_quote_over_budget_is_outside_policy():
     reply = reply_with(
         quotes=[current_quote(amount=1800)],
@@ -311,6 +320,20 @@ def test_missing_delivery_is_missing_information():
 
     assert decision.status == "missing_information"
     assert "missing_delivery" in decision.reasons
+
+
+def test_delivery_deadline_equal_to_campaign_deadline_is_within_policy():
+    delivery = Delivery(
+        delivery_type="deadline",
+        normalized_date=date(2026, 11, 30),
+        raw_text="by 30 November",
+    )
+    reply = reply_with(
+        quotes=[current_quote(amount=1200)],
+        delivery=delivery,
+    )
+
+    assert evaluate_policy(reply, RULES).status == "within_policy"
 
 
 def test_delivery_after_deadline_is_outside_policy():
