@@ -52,7 +52,7 @@ Slice 2 已完成：`CreatorReply + campaign_id → CampaignRules → PolicyDeci
 - Slice 1 Structured Output / Schema Validation：已完成。
 - Slice 2 Direct Lookup / Policy Gate：已完成并通过 Understanding Check。
 - Slice 3 当前正式学习单元：**decision/routing vs generation + draft vs side effect + grounded/no-commit drafting + reference HITL placement**。
-- 当前还没有进入 Slice 3 Own Design，也没有 Slice 3 实现；下一动作是创建并完成 Lesson 0003 的 Technical Foundation + pinned reference trace。
+- Lesson 0003 已创建，当前等待完成页面练习与开放式 Learning Gate 讲评。尚未进入 Slice 3 Own Design，也没有 Slice 3 实现。
 
 ## Next step — Slice 3
 
@@ -92,7 +92,7 @@ Slice 2 已完成：`CreatorReply + campaign_id → CampaignRules → PolicyDeci
 优先追踪：
 
 - `src/email_assistant/prompts.py`：response-agent 如何约束回复行为、已有 context 如何进入生成；
-- `src/email_assistant/tools/default/email_tools.py`：`write_email` 是一个真实 side-effectful action，而不只是“生成一段文本”；
+- `src/email_assistant/tools/default/email_tools.py`：`write_email` 代表发送动作契约；该 pinned 默认实现只是返回字符串的 placeholder，并未真实发送。区分调用前已生成的 content 与执行动作的权限边界；
 - `src/email_assistant/email_assistant_hitl.py`：模型选择 action 后，application 如何在执行 `write_email` 前插入 HITL，以及 accept/edit/ignore/response 如何改变执行；
 - 必要时对照 `src/email_assistant/email_assistant.py` 的非 HITL tool loop。
 
@@ -100,8 +100,8 @@ Slice 2 已完成：`CreatorReply + campaign_id → CampaignRules → PolicyDeci
 
 ### First action in a new conversation
 
-- Expected lesson path: `learning/lessons/0003-route-before-you-write.html`（尚未创建）。
-- 新对话首先根据本节 Technical Foundation 与 `learning/RESOURCES.md` 创建/开展 Lesson 0003。
+- 当前 lesson: `learning/lessons/0003-route-before-you-write.html`（已创建；Learning Gate 待用户作答和讲评）。
+- 新对话从 Lesson 0003 当前未通过的练习/开放式 Gate 继续；不重做 Slice 2，也不把页面自检视为掌握证据。
 - Lesson 0003 必须以 pinned `agents-from-scratch` 源码为教学主线，并在 learning gate 停止。
 - 在 learning gate 通过前，不定义本项目最终 action schema / draft schema / HITL 架构，也不写 Slice 3 implementation。
 

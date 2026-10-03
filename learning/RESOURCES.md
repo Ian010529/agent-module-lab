@@ -16,7 +16,7 @@ Use for: how the response agent receives background/preferences/instructions, ho
 
 - [Pinned source: `src/email_assistant/tools/default/email_tools.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/default/email_tools.py)
 
-Use for: the concrete distinction between producing text and executing the side-effectful `write_email` Tool.
+Use for: the distinction between producing reply content and invoking the send-action contract. In this pinned default implementation, `write_email` is a placeholder that only returns a string; it does not actually send mail.
 
 - [Pinned source: `src/email_assistant/email_assistant_hitl.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py)
 
@@ -66,3 +66,8 @@ After the learning gate, the user must decide:
 - whether HITL is needed in this Slice and at what boundary.
 
 These are intentionally not solved by the Technical Foundation lesson.
+
+### Official API contract checks
+
+- [LangChain Tools](https://docs.langchain.com/oss/python/langchain/tools): callable Tool interfaces and arguments; not a replacement for the pinned trace.
+- [LangGraph Interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts): pause/resume requirements, node re-entry, and side effects before an interrupt. The current lesson only uses these to check boundary semantics, not to choose project infrastructure.

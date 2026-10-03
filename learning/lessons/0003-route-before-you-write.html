@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 0003 · 先决定，再措辞</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+  <link rel="stylesheet" href="../assets/trace-lab.css">
+  <script src="../assets/trace-lab.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <div class="lesson-kicker">Lesson 0003 · Slice 3</div>
+    <h1>先决定，<br>再措辞。</h1>
+    <p class="lede">把一封回复从“下一步做什么”，追到“写什么”，再追到“是否执行”。这三件事的边界在哪里？</p>
+    <div class="meta"><span>约 18–22 分钟</span><span>源码 → 预测 → 验证 → 迁移</span><span>停在 Learning Gate</span></div>
+    <p class="small">前提：Slice 2 已完成。这里不重讲 Tool Calling 基础，也不替你决定本项目的 action schema、draft schema 或 HITL 架构。</p>
+    <nav class="lesson-nav" aria-label="课程章节"><a href="#routing">1 · 谁决定</a><a href="#context">2 · 依据从哪来</a><a href="#execution">3 · 何时执行</a><a href="#grounding">4 · 哪些能写</a><a href="#gate">5 · Final Gate</a></nav>
+  </header>
+
+  <section id="routing">
+    <div class="eyebrow">01 · 读两处源码，先预测</div>
+    <h2>模型产出一个判断后，谁决定程序去哪？</h2>
+    <p>打开 pinned <a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L54-L99">email_assistant_hitl.py L54–99</a>。只看下面这段摘录：</p>
+    <pre><code># result 来自 llm_router.invoke(...)
+classification = result.classification
+if classification == "respond":
+    goto = "response_agent"
+elif classification == "ignore":
+    goto = END
+elif classification == "notify":
+    goto = "triage_interrupt_handler"
+# 返回 Command(goto=goto, update=update)</code></pre>
+    <div class="quiz" data-quiz-id="routing" data-correct="b">
+      <p><strong>预测：</strong>classification 已经是 respond。要确定下一个节点，还要再问一次 LLM 吗？</p>
+      <div class="lab-choices">
+        <button class="choice" data-choice="a" data-rationale="模型做了前面的分类，但这段 if/elif 已经把分类映射到节点，没有第二次模型决策。" aria-pressed="false">A · 要，由模型再选择 response_agent</button>
+        <button class="choice" data-choice="b" data-rationale="这里的分类由模型产生，消费分类并选择 goto 的是应用代码。不要把两个动作合成一个模糊的“Agent 决定”。" aria-pressed="false">B · 不要，应用代码按已定义的映射选择节点</button>
+        <button class="choice" data-choice="c" data-rationale="classification 只是分类结果；文本是在后面的 response-agent 模型调用中生成的。" aria-pressed="false">C · 不需要节点，respond 已经包含回复正文</button>
+      </div><div class="feedback" data-feedback aria-live="polite"></div>
+    </div>
+    <p>接着看 <a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L160-L177">L160–177 的 llm_call</a>：模型用上下文生成内容与调用请求。这和上一段确定 goto 的职责不同。</p>
+    <div class="callout"><strong>迁移时只带走边界：</strong>如果业务规则已经明确“缺币种就先澄清”，应用可执行这条已批准的规则，LLM 可以负责把澄清写成自然语言。<strong>本项目尚未决定各状态的最终 action 映射</strong>；不能仅凭一个 status 就提前替 Own Design 下结论。</div>
+    <p class="small">口头练习：把这两段分别说成一句“输入 → 处理 → 输出”。不要只说“都由 AI 处理”。</p>
+  </section>
+
+  <section id="context">
+    <div class="eyebrow">02 · 输入追踪</div>
+    <h2>一句看似自然的回复，究竟凭什么写出来？</h2>
+    <p>在 <a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L160-L175">llm_call</a>，response agent 的输入是：</p>
+    <pre><code>system message:
+  agent_system_prompt_hitl.format(
+    tools_prompt=HITL_TOOLS_PROMPT,
+    background=default_background,
+    response_preferences=default_response_preferences,
+    cal_preferences=default_cal_preferences
+  )
++ state["messages"]</code></pre>
+    <p><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L65-L75">L65–75</a> 把原邮件放进 messages；后面 Tool observation、人类反馈也会加入 messages。<a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/prompts.py#L74-L109">prompts.py L74–109</a> 则定义如何使用这些信息，缺少直接问题的答案时先通过 Question 询问用户。</p>
+    <div class="quiz" data-quiz-id="context" data-correct="c">
+      <p><strong>找来源：</strong>原邮件没有给出寄样日期，但 response preferences 要求“简洁专业”。这是否足够支持“我们周五寄出样品”？</p>
+      <div class="lab-choices">
+        <button class="choice" data-choice="a" data-rationale="风格偏好只规定怎么说，不提供新的业务事实或发货授权。" aria-pressed="false">A · 足够，简洁专业意味着要给明确日期</button>
+        <button class="choice" data-choice="b" data-rationale="更大的模型也无法把未提供的业务事实变成已知。需要证据和授权，而不是更自信的措辞。" aria-pressed="false">B · 取决于模型能力，能力强就可以推测</button>
+        <button class="choice" data-choice="c" data-rationale="要区分来源事实、写作偏好和授权。该日期及寄样承诺都没有依据。" aria-pressed="false">C · 不足够，风格要求不能创造日期或承诺</button>
+      </div><div class="feedback" data-feedback aria-live="polite"></div>
+    </div>
+    <p><strong>参考实现也有适用范围。</strong><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/prompts.py#L155-L178">default_response_preferences</a> 对活动邀请写了“不承诺”，但对约会场景又允许确认时间。它不是全局 no-commit 安全策略，不能直接照搬成 Creator Outreach 的权限规则。</p>
+    <p>本项目更严格的“不自动接受报价、承诺寄样、修改预算或发送真实商务邮件”来自 <a href="https://github.com/Ian010529/agent-module-lab/blob/main/docs/project-scope.md">project-scope.md</a>。Prompt 能表达约束，但不能替代应用的权限边界，也不能保证每句生成文本都真实。</p>
+  </section>
+
+  <section id="execution">
+    <div class="eyebrow">03 · 调用请求 → 执行边界</div>
+    <h2>“写了草稿”和“执行发送”隔着哪一行？</h2>
+    <p>先看 <a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/default/email_tools.py#L5-L9">默认 write_email 的完整函数体</a>：</p>
+    <pre><code>@tool
+def write_email(to: str, subject: str, content: str) -&gt; str:
+    """Write and send an email."""
+    # Placeholder response - in real app would send email
+    return f"Email sent to {to} with subject '{subject}' and content: {content}"</code></pre>
+    <div class="callout"><strong>必须分清契约与实现：</strong>这个 Tool 代表“写并发送”的动作契约，但 pinned 默认实现是 <strong>mock / placeholder</strong>，只返回字符串，没有调用邮件服务。不能把 “Email sent…” 当成真实投递证据。若接入真实发送，外部副作用发生在执行发送实现时；仅产生 content 或 tool_calls 都还不是发送。</div>
+    <p>HITL 拦截的具体位置在 <a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L188-L255">interrupt_handler L188–255</a>：</p>
+    <pre><code># tool_call 已经由模型产生
+hitl_tools = ["write_email", "schedule_meeting", "Question"]
+# write_email 在名单内，因此先构造 request，暂停等待：
+response = interrupt([request])[0]
+
+if response["type"] == "accept":
+    tool = tools_by_name[tool_call["name"]]
+    observation = tool.invoke(tool_call["args"])</code></pre>
+    <p>HITL 审查的是<strong>已生成的动作与参数，在执行之前</strong>。这个节点也会拦截 Question，因此“所有 interrupt 都是发送审批”同样不准确。不在 hitl_tools 里的动作会走直接执行路径。</p>
+    <div class="trace-lab" aria-label="write_email 人类决定路径模拟器">
+      <h3>先预测，再点四条路径</h3>
+      <p>假设当前只有一个待审 write_email。哪两个选择会调用 Tool？<strong>edit 是仅保存草稿，还是改完就执行？</strong></p>
+      <div class="trace-actions">
+        <button class="choice" data-trace-action="accept" aria-pressed="false">accept · 接受</button>
+        <button class="choice" data-trace-action="edit" aria-pressed="false">edit · 编辑</button>
+        <button class="choice" data-trace-action="ignore" aria-pressed="false">ignore · 忽略</button>
+        <button class="choice" data-trace-action="response" aria-pressed="false">response · 给反馈</button>
+        <button class="choice" data-trace-reset>重置模拟</button>
+      </div>
+      <div class="trace-output" data-trace-output aria-live="polite">
+        <p class="trace-path" data-trace-path>AIMessage.tool_calls → interrupt → 等待人类决定</p>
+        <p><strong data-trace-count>本次路径的 tool.invoke 次数：0</strong></p>
+        <p data-trace-detail>先预测哪两个选择会执行 Tool，再点选验证。</p>
+        <p data-trace-content>待审 content：Could you confirm the quote currency?</p>
+      </div>
+      <p class="trace-footnote">这是源码分支的浏览器演示，每次点击展示一条独立路径；不调用模型、Tool 或邮件服务。未模拟其他 Tool、多 Tool call 或运行时恢复。reference 的“一次一个工具”是 prompt 要求，非此处代码的强制保证，不能据此宣称整个 demo 具备生产级安全。</p>
+    </div>
+    <p class="source">核对实际分支：<a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L250-L287">accept / edit L250–287</a>；<a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py#L303-L346">ignore / response L303–346</a>。</p>
+    <div class="quiz" data-quiz-id="execution" data-correct="a">
+      <p><strong>反事实：</strong>如果把真实发送放到 interrupt 之前，再让人点 ignore，会怎样？</p>
+      <div class="lab-choices">
+        <button class="choice" data-choice="a" data-rationale="审批边界太晚。ignore 可以停止后续流程，但它不能自动撤销已经发生的外部发送。" aria-pressed="false">A · 邮件可能已经发出，ignore 不能自动撤回副作用</button>
+        <button class="choice" data-choice="b" data-rationale="暂停或结束图不等于回滚外部系统；发送和数据库事务不是天然绑定的。" aria-pressed="false">B · 图会回滚，所以邮件自动撤回</button>
+        <button class="choice" data-choice="c" data-rationale="Prompt 约束模型生成；执行顺序仍由应用代码控制。写了“不要发送”也不能撤回已执行操作。" aria-pressed="false">C · 只要 prompt 写了不要发送，执行顺序就不重要</button>
+      </div><div class="feedback" data-feedback aria-live="polite"></div>
+    </div>
+    <details class="source-code"><summary>只补一条恢复语义，避免错误理解</summary><p><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">官方 interrupt 文档</a>说明暂停/恢复需要 checkpointer 与 thread ID；恢复时包含 interrupt 的节点会从头重新执行，所以 interrupt 之前的副作用要考虑重复执行。这不是“暂停 Python 栈后从下一行继续”的通用保证。本课只理解风险位置，不提前设计持久化、幂等或重试系统。</p></details>
+  </section>
+
+  <section id="grounding">
+    <div class="eyebrow">04 · 迁移练习，不做 Own Design</div>
+    <h2>有依据的草稿，也要守住授权边界。</h2>
+    <p>练习事实：CreatorReply 中一份当前报价为 800，currency = None；PolicyDecision 给出 missing_information，reason 包含 missing_quote_currency。没有其他获批业务事实或合作承诺。</p>
+    <div class="quiz" data-quiz-id="grounding" data-correct="b">
+      <p><strong>逐句审查：</strong>下面哪句可以作为“澄清币种”的草稿候选？这里只审内容，不决定最终状态映射。</p>
+      <div class="lab-choices">
+        <button class="choice" data-choice="a" data-rationale="把未知 currency 补成 USD，同时把报价变成已接受，分别越过事实边界和授权边界。" aria-pressed="false">A · Thanks, we accept your USD 800 quote.</button>
+        <button class="choice" data-choice="b" data-rationale="它请求缺失事实，没有补造币种，也没有接受报价。是否选择这条 action 仍由后续 Own Design 决定。" aria-pressed="false">B · Thanks for sharing your quote. Could you confirm the currency?</button>
+        <button class="choice" data-choice="c" data-rationale="没有寄样日期，也没有发货授权。缺失事实不能用听起来合理的承诺填空。" aria-pressed="false">C · We will send the sample this Friday.</button>
+      </div><div class="feedback" data-feedback aria-live="polite"></div>
+    </div>
+    <div class="quiz" data-quiz-id="authorization" data-correct="c">
+      <p><strong>再换一个条件：</strong>若 PolicyDecision = within_policy，是否就能写“我们接受报价，合作确认”？</p>
+      <div class="lab-choices">
+        <button class="choice" data-choice="a" data-rationale="within_policy 只表达当前 gate 所覆盖的规则检查结果，不是合作承诺授权。" aria-pressed="false">A · 可以，规则通过就等于业务批准</button>
+        <button class="choice" data-choice="b" data-rationale="礼貌不改变句子的业务含义。只有草稿也仍须符合本项目 no-commit 边界。" aria-pressed="false">B · 可以，只要措辞礼貌且暂时不发送</button>
+        <button class="choice" data-choice="c" data-rationale="可比的预算/币种/交付检查和业务授权是两种东西。尤其 gate 明确不处理 interest routing，不能拿一个状态当成全部业务事实。" aria-pressed="false">C · 不可以，规则检查通过不等于授权作出承诺</button>
+      </div><div class="feedback" data-feedback aria-live="polite"></div>
+    </div>
+    <p class="source">项目依据：<a href="https://github.com/Ian010529/agent-module-lab/blob/main/src/campaign_policy/gate.py">evaluate_policy 的既有职责</a>与 <a href="https://github.com/Ian010529/agent-module-lab/blob/main/docs/project-scope.md">默认权限边界</a>。</p>
+    <p><strong>错误应该落在哪层？</strong>状态与动作不符，检查 control flow；加入未知事实，检查上下文和生成结果；尝试未经批准的外部写操作，检查执行权限。把三类失败全部归为“prompt 再写好一点”，会丢掉真正的边界。</p>
+    <p class="check-summary" data-check-summary aria-live="polite"></p>
+  </section>
+
+  <section id="gate" class="gate">
+    <div class="eyebrow">05 · Final Gate</div>
+    <h2>合上源码，用自己的话解释。</h2>
+    <p>不要求写实现。下面回答需要讲评后才算通过；选择题答对或下载文件都不会自动标记 gate passed。</p>
+    <label class="answer-label" for="gate-routing">1. 已知业务规则与结构化状态时，routing 和自然语言 generation 各负责什么？如果 mapping 尚未定好，还缺谁的决定？</label>
+    <textarea id="gate-routing" class="answer-field" data-answer placeholder="给一个输入 → 处理 → 输出的例子"></textarea>
+    <label class="answer-label" for="gate-source">2. 从 reference 的输入一路讲到 write_email：context 怎样进入 llm_call？模型产出什么？interrupt 在哪？哪一步 invoke？</label>
+    <textarea id="gate-source" class="answer-field" data-answer placeholder="区分源事实、偏好、调用请求和执行结果"></textarea>
+    <label class="answer-label" for="gate-branches">3. 对 write_email，accept / edit / ignore / response 分别是否执行、用什么参数、下一步去哪？为什么 edit 和 response 不一样？</label>
+    <textarea id="gate-branches" class="answer-field" data-answer placeholder="不看模拟器，先自行还原四条路径"></textarea>
+    <label class="answer-label" for="gate-mock">4. 为什么这版默认 Tool 的 “Email sent…” 不能证明真实投递？若未来接真实邮件服务，审查应该在什么边界前？</label>
+    <textarea id="gate-mock" class="answer-field" data-answer placeholder="同时说清动作契约和实际函数体"></textarea>
+    <label class="answer-label" for="gate-grounding">5. 报价缺币种、交付时间模糊、寄样尚未授权时，草稿哪些能写、哪些不能写？within_policy 为什么也不等于接受报价？</label>
+    <textarea id="gate-grounding" class="answer-field" data-answer placeholder="至少指出一个编造事实和一个越权承诺，并改写"></textarea>
+    <label class="answer-label" for="gate-redesign">6. 只返回草稿与自动执行外部动作，为什么可能需要不同实现？什么需求变化会让你重新考虑 Tool / HITL / workflow？</label>
+    <textarea id="gate-redesign" class="answer-field" data-answer placeholder="说出触发重新设计的条件，不必现在选框架或 schema"></textarea>
+    <p><button class="choice" data-export-answers>下载我的回答 · TXT</button></p>
+    <p class="small" data-export-status aria-live="polite">输入只保留在当前页面，刷新会清空。可复制回答回对话，或下载 TXT 后再发给老师；页面不会联网提交。</p>
+    <p><strong>到这里停。</strong>通过 Learning Gate 后，才进入用户 Own Design → 固定 tests/eval → AI 主导 vibe coding → verification → understanding check。当前没有 Slice 3 implementation，也不记录尚未证明的掌握状态。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Sources</div>
+    <h2>可核对的阅读范围</h2>
+    <p class="small">唯一业务参考：agents-from-scratch @ 603fc7a4ac6119004f43894395e504a1fefcc6c0。官方文档只校验通用 API 语义；当前版本的分支行为仍以 pinned 源码为准。</p>
+    <ul class="source-list">
+      <li><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/prompts.py">prompts.py</a>：HITL prompt L74–109；response preferences L155–178</li>
+      <li><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/default/email_tools.py">email_tools.py</a>：write_email 的发送契约与 placeholder L5–9</li>
+      <li><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py">email_assistant_hitl.py</a>：routing L54–99；context L160–177；执行边界 L188–346</li>
+      <li><a href="https://docs.langchain.com/oss/python/langchain/tools">LangChain Tools 官方文档</a>：Tool 是可调用能力及其输入/输出接口</li>
+      <li><a href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph Interrupts 官方文档</a>：暂停、resume、重入与副作用位置</li>
+    </ul>
+    <p class="small">课件无外部字体、脚本、模型调用或追踪。外链仅在你点击时打开。</p>
+  </section>
+</main>
+</body>
+</html>

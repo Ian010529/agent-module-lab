@@ -54,9 +54,11 @@
 
 当前阶段：**Technical Foundation + pinned reference trace**
 
-当前还没有 Slice 3 lesson 文件。新对话的第一动作是创建/开展：
+当前 Slice 3 lesson 已创建；新对话从页面练习与开放式 Learning Gate 继续：
 
 `learning/lessons/0003-route-before-you-write.html`
+
+Learning Gate 尚未通过；未进入 Own Design，不新增学习记录或提高技术掌握状态。
 
 ### 当前要学的技术边界
 
