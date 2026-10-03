@@ -12,8 +12,8 @@
 
 | 技术 | 当前状态 | 当前/计划中的项目落点 |
 |---|---|---|
-| Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
-| LLM Messages / Prompt | UNDERSTANDING | 已为 Reply Extraction 编写 no-guess extraction prompt；真实模型效果待持续观察 |
+| Workflow vs Agent | UNDERSTANDING | Slice 3 将继续验证：已有 PolicyDecision 的 routing 与需要 LLM generation 的边界 |
+| LLM Messages / Prompt | UNDERSTANDING | Slice 3 将学习 grounded reply drafting / no-commit prompt boundary |
 | Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续开放式 action 选择场景再实践 |
@@ -23,13 +23,13 @@
 | State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
 | State Machine / Graph | UNDERSTANDING | 已追踪 StateGraph 主链 |
 | LangGraph | UNDERSTANDING | 只理解当前参考实现；是否用于最终实现尚未决定 |
-| HITL | UNDERSTANDING | 已分析业务判断与执行审批两类 HITL |
+| HITL | UNDERSTANDING | Slice 3 将从 reference 追踪 write_email 前的 interrupt；是否用于本项目留到 Own Design |
 | Interrupt / Checkpoint / Resume | UNDERSTANDING | 已追踪参考项目暂停恢复机制 |
 | Context Minimization | PRACTICED | CampaignRules 仅保留 budget / currency / delivery deadline 等 gate 所需规则 |
 | Business Data vs Context | PRACTICED | 已将 Campaign business data 经 lookup boundary 收敛为最小 CampaignRules |
 | State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
 | RAG vs Direct Lookup | PRACTICED | known-ID Campaign rules direct lookup 已实现并测试；未引入 RAG |
-| Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
+| Tool Permission / Least Privilege | UNDERSTANDING | Slice 3 将对照 draft generation 与 side-effectful write_email 的权限边界 |
 | Policy Gate | CAN EXPLAIN | 已实现并测试，能够解释状态优先级、failure boundary 与 redesign triggers |
 | Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
@@ -50,9 +50,11 @@
 
 ## 当前技术单元
 
-Learning gate 已通过，当前进入设计：
+正在进入新的业务 Slice：
 
-**Slice 2 complete — Campaign Rules direct lookup + deterministic Policy Gate**
+**Slice 3 — Next Action Recommendation + Safe Reply Draft**
+
+当前阶段：**Technical Foundation + pinned reference trace**
 
 对应 teach lesson：
 
@@ -83,3 +85,17 @@ Learning gate 已通过，当前进入设计：
 - 当前需求没有必要使用：标记 `NOT REQUIRED NOW`，不为了学习而强行引入。
 
 完成 teach lesson 或看过 reference 本身不等于 `PRACTICED`。每个 Slice 结束时都检查本表，但只有状态真实变化时才修改。
+
+
+### Slice 3 focus
+
+当前不把任何新技术提前标记为 PRACTICED。
+
+本 Slice 的 Technical Foundation 只聚焦：
+
+- deterministic next-action routing vs LLM natural-language generation；
+- draft generation vs side-effectful external action；
+- grounded/no-commit drafting boundary；
+- reference HITL placement around side effects。
+
+Pinned reference 仍为 `agents-from-scratch`；不跨阶段引入其他 reference。Own Design 必须在 learning gate 之后由用户完成。
