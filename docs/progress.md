@@ -68,6 +68,8 @@ Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-
    - 明确 deterministic rules 与仍需 semantic judgment 的边界。
    - 当前 v1 已锁定：`CampaignRules = campaign_id + max_budget + currency + latest_delivery_date`；Campaign 配置缺失在 lookup 层失败，不进入 Policy Gate；`missing_information` 仅表示 CreatorReply 一侧缺少判断所需事实。
    - Quote v1 规则已锁定：`current_quote + exact` 直接比预算；range 全部在预算内/外可确定判断，跨预算走 `human_review`；`starting_from > budget` 为 `outside_policy`，否则 `human_review`；`usual_rate` 为 `missing_information`；`quote_basis=unclear` 或存在自然语言 `conditions` 时不强行确定化，走 `human_review`。
+   - Delivery v1 规则已锁定：`delivery=None → missing_information`；exact/deadline 直接与 `latest_delivery_date` 比较；date range 全部在 deadline 内/外可确定判断，跨 deadline 走 `human_review`；approximate delivery 走 `human_review`。
+   - Multi-quote v1 规则已锁定：`quotes=None → missing_information`；单个 quote 按 Quote v1 规则判断；多个 quotes 不自动选价或猜适用条件，直接 `human_review`。
 2. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
 3. **Implementation**：vibe coding 实现最薄 lookup interface 与 policy gate；不提前引入真实 Campaign 基础设施。
 4. **Verification**：优先 deterministic tests；需要语义判断的部分才单独设计 eval。
