@@ -1,64 +1,68 @@
 # AI Module Engineering Resources
 
-## Current Slice 2 — Campaign Context + Policy Gate
+## Current Slice 3 — Next Action Recommendation + Safe Reply Draft
 
-### Project source — default first choice
+### Authoritative project reference
 
 - [Project reference: `reference/agents-from-scratch`](https://github.com/Ian010529/agent-module-lab/tree/main/reference/agents-from-scratch)
 
-Pinned at commit `603fc7a4ac6119004f43894395e504a1fefcc6c0`. Slice 2 stays inside this reference. The purpose is to trace the real Tool Calling mechanics and deterministic workflow boundary before designing our own Campaign Context flow.
+Pinned at commit `603fc7a4ac6119004f43894395e504a1fefcc6c0`. This remains the only business-development reference for the current Creator Outreach / Reply Copilot stage.
+
+### Source-first trace for Slice 3
+
+- [Pinned source: `src/email_assistant/prompts.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/prompts.py)
+
+Use for: how the response agent receives background/preferences/instructions, how response behavior is constrained, and where the reference explicitly avoids some commitments.
 
 - [Pinned source: `src/email_assistant/tools/default/email_tools.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/default/email_tools.py)
 
-Use for: `@tool` on functions and Pydantic classes; tool name, docstring and argument shape.
-
-- [Pinned source: `src/email_assistant/tools/default/calendar_tools.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/default/calendar_tools.py)
-
-Use for: another concrete function-tool example with typed arguments.
-
-- [Pinned source: `src/email_assistant/tools/base.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/base.py)
-
-Use for: application-controlled Tool exposure via `get_tools(...)` and runtime dispatch map via `get_tools_by_name(...)`.
-
-- [Pinned source: `src/email_assistant/email_assistant.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
-
-Use for: `bind_tools`, `AIMessage.tool_calls`, `name / args / id`, `tool.invoke(args)`, returning a `role="tool"` observation, the Agent loop, Done stop condition, and deterministic triage routing.
+Use for: the concrete distinction between producing text and executing the side-effectful `write_email` Tool.
 
 - [Pinned source: `src/email_assistant/email_assistant_hitl.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py)
 
-Use only for the current boundary: application can intercept a model-selected Tool before execution and decide whether to execute directly or route through HITL. Do not expand into HITL persistence in this Slice.
+Use for: how a model-selected `write_email` action is intercepted before execution; how accept/edit/ignore/response affect the path; and how application control remains outside the LLM.
 
-### Official documentation — verify contracts after reading the pinned code
-
-- [LangChain Reference: `BaseChatOpenAI.bind_tools`](https://reference.langchain.com/python/langchain-openai/chat_models/base/BaseChatOpenAI/bind_tools)
-
-Verify: accepted tool definitions, returned AIMessage runnable, and `tool_choice` semantics. `required` / `any` forces at least one tool call; `auto` permits the model to choose zero or more.
-
-- [OpenAI Guide: Function calling](https://developers.openai.com/api/docs/guides/function-calling)
-
-Verify: function calling exposes application functions/data to the model, while the application executes custom functions and returns their outputs to the model.
-
-## Previous Slice 1 — Structured Output + Schema Validation
-
-- [Pinned source: `src/email_assistant/schemas.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
 - [Pinned source: `src/email_assistant/email_assistant.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
-- [Pinned source: `src/email_assistant/eval/evaluate_triage.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/eval/evaluate_triage.py)
-- [LangChain Reference: `BaseChatModel.with_structured_output`](https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output)
-- [OpenAI Guide: Structured model outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
-- [Pydantic Documentation: Validators](https://docs.pydantic.dev/latest/concepts/validators/)
+
+Use only as needed to contrast the non-HITL tool loop with the HITL version.
+
+### Current learning boundary
+
+The lesson for Slice 3 must teach enough technical detail for the user to:
+
+- separate deterministic control flow from language generation;
+- separate draft creation from external side effects;
+- trace the reference's `write_email` + HITL path;
+- identify where ungrounded facts or unauthorized commitments could enter a generated reply;
+- make the project's action/draft/HITL design themselves after the learning gate.
+
+Do **not** pre-decide the project's action schema, draft schema, orchestration framework, or final HITL mechanism inside the lesson.
+
+## Previous Slice 2 — Tool boundary + direct lookup
+
+- `learning/lessons/0002-known-next-step-is-not-a-tool.html`
+- `learning/reference/tool-calling-boundary.html`
+- `docs/decisions/0002-campaign-rules-policy-gate.md`
 
 ## Reference staging
 
-The repository's existing staging remains authoritative:
+The repository's existing staging is authoritative:
 
 - `agents-from-scratch`: current Creator Outreach / Reply Copilot.
 - `gpt-researcher`: later Creator / Competitor Research Copilot.
 - `vanna`: later Campaign Performance Analyst.
-- `tau2-bench`: evaluation reference, introduced when the project reaches the relevant eval work.
+- `tau2-bench`: evaluation reference when the project reaches evaluation work.
 
-Do not pull a later reference into the current Slice merely because a filename or concept sounds similar.
+Do not pull a later reference into Slice 3 because it contains a similarly named concept.
 
-## Gaps
+## Gaps intentionally left for Own Design
 
-- Slice 2 has not selected a real Campaign API/database. That decision is intentionally deferred to Own Design; learning only establishes the interface/control boundary needed to make that decision.
-- RAG, Memory, MCP, dynamic Tool Registry, Multi-Agent, Redis and queues remain out of scope until a concrete project requirement appears.
+After the learning gate, the user must decide:
+
+- the exact next-action output contract;
+- the exact draft output contract;
+- which PolicyDecision states produce a draft, clarification path, or human handoff;
+- whether any part needs Agent Tool Calling or whether fixed workflow is sufficient;
+- whether HITL is needed in this Slice and at what boundary.
+
+These are intentionally not solved by the Technical Foundation lesson.
