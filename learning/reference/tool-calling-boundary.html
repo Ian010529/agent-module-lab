@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tool Calling Boundary — Quick Reference</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+</head>
+<body>
+<main>
+  <header>
+    <div class="lesson-kicker">Reference · Tool Calling Boundary</div>
+    <h1>Who owns the next-step decision?</h1>
+    <p class="lede">Slice 2 的复习页。lesson 用来学，这一页只用于快速恢复 Tool Calling 的真实执行链和控制权边界。</p>
+  </header>
+
+  <section>
+    <h2>Reference tool loop</h2>
+    <pre>@tool
+  ↓
+get_tools(...)
+  ↓
+llm.bind_tools(...)
+  ↓
+LLM returns AIMessage.tool_calls
+  ↓
+{name, args, id}
+  ↓
+tools_by_name[name]
+  ↓
+tool.invoke(args)
+  ↓
+role="tool", tool_call_id=id
+  ↓
+LLM sees observation</pre>
+  </section>
+
+  <section>
+    <h2>每层是谁负责</h2>
+    <table>
+      <thead><tr><th>层</th><th>责任</th></tr></thead>
+      <tbody>
+        <tr><td>Application</td><td>定义能力、选择暴露的 Tools、执行 Tool、做权限/HITL、控制 deterministic workflow。</td></tr>
+        <tr><td>LLM</td><td>在已暴露 action surface 中，根据语义产生 tool call 的 name / args。</td></tr>
+        <tr><td>Tool result</td><td>由 application 执行后形成 observation，再作为 tool message 回到模型。</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Tool vs direct call</h2>
+    <table>
+      <thead><tr><th>问题</th><th>倾向</th></tr></thead>
+      <tbody>
+        <tr><td>模型需要根据语义在多个动作中选择吗？</td><td>Controlled Agent Tool</td></tr>
+        <tr><td>Workflow 已经知道下一步必须调用哪个接口吗？</td><td>Direct function / API call</td></tr>
+        <tr><td>函数访问外部 API/DB 吗？</td><td>这本身不能决定是否是 Agent Tool</td></tr>
+        <tr><td>已知事实满足明确阈值/集合规则吗？</td><td>Deterministic code</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Campaign Context mental model</h2>
+    <pre>business data
+  ↓ exact lookup
+minimal runtime context
+  ↓
+deterministic policy gate
+  ↓
+explicit decision + reasons</pre>
+    <p class="small">具体 CampaignPolicy 字段、状态 schema 和 lookup interface 在 Own Design 阶段决定，不从 reference 机械复制。</p>
+  </section>
+
+  <div class="nav">
+    <a href="../lessons/0002-known-next-step-is-not-a-tool.html">← Lesson 0002</a>
+    <span>Quick reference</span>
+  </div>
+</main>
+</body>
+</html>
