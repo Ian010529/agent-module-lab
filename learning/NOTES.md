@@ -15,3 +15,6 @@
 - A lesson must stop at the learning gate. Do not use lesson content to pre-decide the project's Own Design, generate implementation, or skip directly to coding.
 - Technical foundation must be sufficient for the user to read the pinned source, make the design decision themselves, review generated code, and explain failure boundaries; it should not expand into unrelated curriculum.
 - The pinned reference must be part of the teaching path itself, not merely a citation list at the end. Trace the real inputs, objects, control flow, execution path, and relevant failure boundary before asking for transfer to the user's project.
+
+- Reference selection is not inferred ad hoc. The authoritative mapping is `docs/references.md` together with `docs/project-scope.md`. Use the reference already assigned to the current project/stage; do not switch to another pinned project merely because it contains a similarly named concept.
+- Before creating a lesson or starting a new Slice, first read the current-stage reference assignment from the repository. If the repository does not clearly assign a reference for that stage, stop and resolve the gap from existing project documents before introducing a new reference.
