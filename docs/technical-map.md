@@ -13,11 +13,11 @@
 | 技术 | 当前状态 | 当前/计划中的项目落点 |
 |---|---|---|
 | Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
-| LLM Messages / Prompt | UNDERSTANDING | 已为 Reply Extraction 编写 no-guess extraction prompt；真实模型效果待验证 |
+| LLM Messages / Prompt | UNDERSTANDING | 已为 Reply Extraction 编写 no-guess extraction prompt；真实模型效果待持续观察 |
 | Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
-| Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续 Context / Tool layer 实践 |
-| 普通函数 vs Agent Tool | UNDERSTANDING | Campaign policy 查询边界 |
+| Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续开放式 action 选择场景再实践 |
+| 普通函数 vs Agent Tool | UNDERSTANDING | Slice 2 Lesson 0002 正在验证 Campaign policy 查询边界 |
 | Agent Loop | UNDERSTANDING | 已追踪 llm → tool → observation → llm |
 | Stop Condition | UNDERSTANDING | 已分析 Done termination signal |
 | State | UNDERSTANDING | 已分析参考项目 State / MessagesState |
@@ -28,9 +28,9 @@
 | Context Minimization | UNDERSTANDING | 已确定按当前 decision 获取最少必要上下文 |
 | Business Data vs Context | UNDERSTANDING | 已通过 campaign policy / creator history 案例区分 |
 | State vs Memory | NOT STARTED | 后续在确有长期偏好需求时学习 |
-| RAG vs Direct Lookup | UNDERSTANDING | 已确定 known-ID 结构化事实优先 API/DB |
+| RAG vs Direct Lookup | UNDERSTANDING | 已确定 known-ID 结构化事实优先 API/DB；Slice 2 将实践 |
 | Tool Permission / Least Privilege | UNDERSTANDING | 已分析最小 Tool 暴露与只返回必要字段 |
-| Policy Gate | NOT STARTED | 报价规则切片 |
+| Policy Gate | NOT STARTED | Slice 2 learning gate 后进入 own design / implementation |
 | Deterministic Evaluation | PRACTICED | Reply Extraction schema / failure tests 已通过 |
 | Tool-call Evaluation | UNDERSTANDING | 已追踪参考测试 |
 | Trajectory Evaluation | NOT STARTED | 后续完整 agent eval |
@@ -52,23 +52,25 @@
 
 正在验证：
 
-**Structured Output + Schema Validation → Reply Extraction**
+**Direct Lookup / 普通函数 vs Agent Tool → Campaign Context boundary**
 
 对应 teach lesson：
 
-`learning/lessons/0001-schema-is-a-contract.html`
+`learning/lessons/0002-known-next-step-is-not-a-tool.html`
 
-当前实现：
+当前 reference trace：
 
-- `src/creator_reply/schemas.py`
-- `src/creator_reply/extractor.py`
-- `tests/reply_extraction_cases.json`
+- `reference/agents-from-scratch/src/email_assistant/tools/base.py`
+- `reference/agents-from-scratch/src/email_assistant/email_assistant_hitl.py`
+- `reference/agents-from-scratch/src/email_assistant/email_assistant.py`
 
 当前结论：
 
-- Schema Validation 已达到 `PRACTICED`。
-- Structured Output 已达到 `PRACTICED`：已在本项目实现 structured extraction，并完成真实模型验收。
-- 不能把 deterministic test 通过当成 semantic extraction correctness 已验证。
+- 已知 `campaign_id` 且下一步固定为查询 Campaign Policy 时，优先 direct lookup / 普通函数，而不是让 LLM 重新选择 Tool。
+- 外部 I/O 与 Agent Tool 不是同一个概念；普通函数也可以访问 API / DB。
+- Campaign Policy 与 Creator Reply 的明确规则比较应由 deterministic code 完成。
+- 上述边界尚需通过 Lesson 0002 transfer gate；通过 gate 本身仍不等于 `PRACTICED`。
+- `Policy Gate` 只有在自己的实现中落地并通过测试后才能进入 `PRACTICED`。
 
 ## 技术状态更新原则
 
