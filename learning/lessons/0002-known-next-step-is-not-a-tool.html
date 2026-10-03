@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lesson 0002 — A Known Next Step Is Not an Agent Tool</title>
+  <link rel="stylesheet" href="../assets/lesson.css" />
+  <script src="../assets/quiz.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <div class="lesson-kicker">Lesson 0002 · Campaign Context + Policy Gate</div>
+    <h1>A known next step<br>is not an Agent Tool.</h1>
+    <p class="lede">这一课只解决一个边界：当程序已经知道下一步必须根据 <code>campaign_id</code> 查询 Campaign Policy 时，为什么应该直接调用普通函数 / API，而不是把查询暴露给 LLM 再让它决定。</p>
+    <div class="meta">
+      <span>约 10–15 分钟</span>
+      <span>Slice 2 technical foundation</span>
+      <span>需要：已完成 Reply Extraction</span>
+    </div>
+  </header>
+
+  <section>
+    <div class="eyebrow">Why this matters</div>
+    <h2>“访问外部数据”不等于“必须做成 Tool”。</h2>
+    <p>Tool calling 的价值在于：模型面对多个可能动作时，可以根据当前语义决定<strong>是否调用、调用哪个、参数是什么</strong>。OpenAI 的 function calling 文档也把 tool calling 描述为让模型访问应用功能与外部数据，并说明默认情况下模型会决定何时、如何调用工具；<code>tool_choice</code> 可以进一步约束这种选择。<sup><a href="#s5">[5]</a></sup></p>
+
+    <p>但 Slice 2 已经有两个确定事实：</p>
+    <pre>input = CreatorReply + campaign_id
+
+下一步固定：
+campaign_id
+   ↓
+lookup campaign policy
+   ↓
+deterministic policy checks</pre>
+
+    <div class="callout">
+      <strong>关键判断：</strong><br>
+      如果“下一步是什么”和“查询 key 从哪里来”都已经由 workflow 确定，就没有必要再付出一次 LLM 决策成本，让模型重新决定同一件事。
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Two different responsibilities</div>
+    <h2>普通函数负责执行已知步骤；Agent Tool 承担模型决策空间。</h2>
+
+    <div class="figure" aria-label="direct lookup versus agent tool">
+      <div>
+        <strong>Direct lookup / 普通函数</strong>
+        <p>程序已经知道要查 Campaign Policy，并且已有可信的 <code>campaign_id</code>。代码直接调用接口。</p>
+      </div>
+      <div>
+        <strong>Agent Tool</strong>
+        <p>模型需要根据语义，在多个可选动作之间决定下一步，例如查日历、提问、写邮件。</p>
+      </div>
+      <div>
+        <strong>Deterministic policy code</strong>
+        <p>事实和政策都已拿到后，预算、币种、允许范围等明确规则由代码判断。</p>
+      </div>
+    </div>
+
+    <pre># Slice 2 的目标形态
+
+policy = get_campaign_policy(campaign_id)
+decision = evaluate_policy(reply, policy)</pre>
+
+    <p>这里的 <code>get_campaign_policy</code> 完全可以在内部访问数据库或 HTTP API。它不是 Agent Tool，并不意味着它只能是“本地小函数”；区别在于<strong>谁决定调用它</strong>。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Reference implementation</div>
+    <h2>在 pinned 源码里，Tool 是被刻意放进模型的动作空间。</h2>
+
+    <p>参考项目先由代码选择允许暴露的工具：</p>
+    <pre>tools = get_tools([
+  "write_email",
+  "schedule_meeting",
+  "check_calendar_availability",
+  "Question",
+  "Done",
+])</pre>
+
+    <p><code>get_tools</code> 本身只是普通 Python 代码：从一个已知工具集合里取出指定工具。<sup><a href="#s1">[1]</a></sup> 然后这些工具被绑定到 LLM：</p>
+
+    <pre>llm_with_tools = llm.bind_tools(
+    tools,
+    tool_choice="required"
+)</pre>
+
+    <p>LangChain 的 API reference 明确说明：<code>bind_tools</code> 把工具定义绑定给模型，而 <code>tool_choice</code> 控制模型的工具选择行为；<code>"required"</code> / <code>"any"</code> 会要求至少调用一个工具。<sup><a href="#s4">[4]</a></sup></p>
+
+    <p>随后，参考项目读取模型产生的 <code>tool_calls</code>，根据名字找到对应工具并执行。HITL 版本甚至先判断该工具是否需要人工审批，再执行。<sup><a href="#s2">[2]</a></sup></p>
+
+    <p>这说明 Tool 在这里不是“任何外部函数的包装名”，而是<strong>模型可选择的 action interface</strong>。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Contrast</div>
+    <h2>同一份参考代码也展示了 deterministic routing。</h2>
+
+    <p>在 triage 阶段，模型只负责产生结构化分类。分类一旦得到，后面的控制流不是再让 Agent 选择，而是普通 <code>if / elif</code>：</p>
+
+    <pre>if classification == "respond":
+    goto = "response_agent"
+elif classification == "ignore":
+    goto = END
+elif classification == "notify":
+    goto = "triage_interrupt_handler"</pre>
+
+    <p>也就是：模型负责它真正擅长且必要的语义判断；一旦结果已经明确，程序用确定性控制流继续。<sup><a href="#s3">[3]</a></sup></p>
+
+    <p>Slice 2 要沿用的是这个边界，而不是机械复制参考项目的 Tool 结构。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Failure surface</div>
+    <h2>把固定 lookup 做成 Tool，会额外引入什么？</h2>
+
+    <p>假设每次处理 Creator Reply 都必须读取同一个 <code>campaign_id</code> 的 policy。若仍让 LLM 调 Tool，就多出原本不存在的失败路径：</p>
+
+    <pre>本来：
+campaign_id → lookup(policy)
+
+Tool 化以后：
+campaign_id
+  → LLM 是否想起要查？
+  → 选对 tool 吗？
+  → 参数 campaign_id 填对吗？
+  → tool call 是否符合 schema？
+  → lookup(policy)</pre>
+
+    <p>这些额外步骤只有在模型确实需要选择动作时才值得承担。当前 Slice 没有这个需求。</p>
+
+    <div class="callout">
+      <strong>最小权限也更清楚：</strong><br>
+      Campaign lookup 只返回 policy gate 真正需要的字段，而不是把整个 Campaign 对象、所有业务接口或一组无关 tools 暴露给模型。
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Practice</div>
+    <h2>判断“谁应该拥有这个决定”。</h2>
+
+    <div class="quiz" data-quiz-id="p1" data-correct="direct" data-explanation="workflow 已知必须用 campaign_id 查 policy；没有模型决策价值。">
+      <p><strong>Case 1.</strong> 输入已经带有可信 <code>campaign_id</code>，每条回复在 policy gate 前都必须查询对应 campaign 的预算和币种。应该怎样调用？</p>
+      <div class="choices">
+        <button class="choice" data-choice="tool">把 lookup 暴露成 Agent Tool，让模型决定</button>
+        <button class="choice" data-choice="direct">workflow 直接调用 lookup 函数 / API</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="p2" data-correct="tool" data-explanation="这里真正存在语义驱动的动作选择：查日历、追问或写回复。">
+      <p><strong>Case 2.</strong> 回复 Agent 需要根据邮件内容自己决定：查日历、向用户追问，还是直接写邮件。这里更适合？</p>
+      <div class="choices">
+        <button class="choice" data-choice="direct">固定 direct lookup</button>
+        <button class="choice" data-choice="tool">受控的 Agent Tools</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="p3" data-correct="code" data-explanation="quote 与 max_budget 都是已知数值，比较大小是 deterministic business rule。">
+      <p><strong>Case 3.</strong> 已得到 <code>quote=1800</code>、<code>max_budget=1500</code>。第一步判断是否超预算应该交给？</p>
+      <div class="choices">
+        <button class="choice" data-choice="llm">LLM 再判断一次</button>
+        <button class="choice" data-choice="code">deterministic code</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+  </section>
+
+  <section class="gate" data-gate>
+    <div class="eyebrow">Final gate</div>
+    <h2>最后四题：通过后才进入 Own Design。</h2>
+    <p class="small">不要背“Tool 不好”。判断标准是：当前步骤是否真的需要模型拥有选择权。</p>
+
+    <div class="quiz" data-quiz-id="g1" data-correct="direct" data-explanation="下一步固定且 key 已知，direct lookup 更简单、更可靠。">
+      <p><strong>1.</strong> <code>campaign_id</code> 已知，下一步 100% 是获取该 campaign 的 policy。选择？</p>
+      <div class="choices">
+        <button class="choice" data-choice="tool">Agent Tool</button>
+        <button class="choice" data-choice="direct">Direct lookup</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="g2" data-correct="tool" data-explanation="多个可选动作需要根据自然语言语义选择，这正是 tool calling 的价值。">
+      <p><strong>2.</strong> 模型需要自行判断是 <code>check_calendar</code>、<code>Question</code> 还是 <code>write_email</code>。选择？</p>
+      <div class="choices">
+        <button class="choice" data-choice="direct">把其中一个固定写死</button>
+        <button class="choice" data-choice="tool">把受控动作暴露成 Tools</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="g3" data-correct="no" data-explanation="外部 I/O 和 Agent Tool 是两回事；普通函数完全可以访问数据库/API。">
+      <p><strong>3.</strong> “只要函数访问数据库或 HTTP API，就应该包装成 Agent Tool。”对吗？</p>
+      <div class="choices">
+        <button class="choice" data-choice="yes">对</button>
+        <button class="choice" data-choice="no">不对</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="quiz" data-quiz-id="g4" data-correct="deterministic" data-explanation="policy 与 reply 事实都已得到后，明确规则应由程序执行；不应让 LLM重新猜规则。">
+      <p><strong>4.</strong> Campaign Policy 明确规定 <code>currency=USD</code>、<code>max_budget=1500</code>，Creator Reply 是 <code>1800 EUR</code>。第一层 policy 判断应该是？</p>
+      <div class="choices">
+        <button class="choice" data-choice="semantic">让 LLM 综合判断“感觉是否可接受”</button>
+        <button class="choice" data-choice="deterministic">代码检查币种与预算规则</button>
+      </div>
+      <div class="feedback" data-feedback></div>
+    </div>
+
+    <div class="gate-status" data-gate-status></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Transfer question</div>
+    <h2>回到我们的项目，不看答案说清楚这条链。</h2>
+
+    <pre>CreatorReply + campaign_id
+          ↓
+         ???
+          ↓
+ Campaign Policy
+          ↓
+         ???
+          ↓
+within_policy / missing_information / human_review</pre>
+
+    <p>在 ChatGPT 里用自己的话回答两点：</p>
+    <ol>
+      <li>两个 <code>???</code> 分别应该是什么？</li>
+      <li>什么条件变化后，你才会重新考虑把 Campaign 查询暴露成 Agent Tool？</li>
+    </ol>
+
+    <p class="small">这两题用于真正的 learning gate。HTML 里的选择题全部正确，还不等于已经形成可迁移的设计判断。</p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Takeaway</div>
+    <h2>只记这一句。</h2>
+    <pre>Known workflow step → direct code / API
+Semantic action choice → controlled Agent Tool
+Known business rule → deterministic code</pre>
+
+    <div class="nav">
+      <span>Lesson 0002</span>
+      <span>Next after gate: Own Design → tests first</span>
+    </div>
+  </section>
+
+  <section class="source-list">
+    <div class="eyebrow">Sources</div>
+    <ol>
+      <li id="s1"><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/base.py">agents-from-scratch — tools/base.py, pinned commit</a></li>
+      <li id="s2"><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py">agents-from-scratch — email_assistant_hitl.py, pinned commit</a></li>
+      <li id="s3"><a href="https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py">agents-from-scratch — email_assistant.py, pinned commit</a></li>
+      <li id="s4"><a href="https://reference.langchain.com/python/langchain-openai/chat_models/base/BaseChatOpenAI/bind_tools">LangChain Reference — bind_tools</a></li>
+      <li id="s5"><a href="https://developers.openai.com/api/docs/guides/function-calling">OpenAI — Function calling</a></li>
+    </ol>
+  </section>
+</main>
+</body>
+</html>
