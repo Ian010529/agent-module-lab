@@ -14,7 +14,7 @@
 |---|---|---|
 | Workflow vs Agent | UNDERSTANDING | 已通过参考源码与报价处理案例分析边界 |
 | LLM Messages / Prompt | UNDERSTANDING | 已为 Reply Extraction 编写 no-guess extraction prompt；真实模型效果待验证 |
-| Structured Output | UNDERSTANDING | 已实现 `with_structured_output(CreatorReply)` 适配并用 fake model 测试；真实 provider 待验证 |
+| Structured Output | PRACTICED | 已实现 `with_structured_output(CreatorReply)` 并完成真实模型验收 |
 | Schema Validation | PRACTICED | 已实现 Quote / Delivery cross-field validation；deterministic tests 通过 |
 | Tool Calling | UNDERSTANDING | 已追踪参考项目 tool loop；后续 Context / Tool layer 实践 |
 | 普通函数 vs Agent Tool | UNDERSTANDING | Campaign policy 查询边界 |
@@ -67,7 +67,7 @@
 当前结论：
 
 - Schema Validation 已达到 `PRACTICED`。
-- Structured Output 仍保持 `UNDERSTANDING`，因为目前只用 fake model 验证接口与 schema wiring，还没有真实模型输出的证据。
+- Structured Output 已达到 `PRACTICED`：已在本项目实现 structured extraction，并完成真实模型验收。
 - 不能把 deterministic test 通过当成 semantic extraction correctness 已验证。
 
 ## 技术状态更新原则
