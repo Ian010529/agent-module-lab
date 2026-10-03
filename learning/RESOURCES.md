@@ -1,46 +1,51 @@
 # AI Module Engineering Resources
 
-## Knowledge
+## Current Slice 2 — Campaign Context + Policy Gate
 
-### Project source — default first choice for the current slice
+### Project source — default first choice
 
 - [Project reference: `reference/agents-from-scratch`](https://github.com/Ian010529/agent-module-lab/tree/main/reference/agents-from-scratch)
 
-Pinned in this repository at commit `603fc7a4ac6119004f43894395e504a1fefcc6c0`. Use first for: learning how the reference system actually implements structured output, routing, state transitions, and evaluation.
+Pinned in this repository at commit `603fc7a4ac6119004f43894395e504a1fefcc6c0`. For Slice 2, use it to study the boundary between deterministic workflow control and model-selected tools. Do not copy its tool loop mechanically.
 
-- [Pinned source: `src/email_assistant/schemas.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
+- [Pinned source: `src/email_assistant/tools/base.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/tools/base.py)
 
-This is the exact file behind the repository submodule. Use for: `RouterSchema`, `Literal`, and the separation between one LLM call's output schema and workflow state.
+Use for: seeing that the application code chooses which tools are available before the model sees them.
+
+- [Pinned source: `src/email_assistant/email_assistant_hitl.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant_hitl.py)
+
+Use for: `bind_tools`, model-generated `tool_calls`, direct execution of selected tools, and the fact that only some tool calls need HITL.
 
 - [Pinned source: `src/email_assistant/email_assistant.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
 
-This is the exact file behind the repository submodule. Use for: `with_structured_output(RouterSchema)`, `result.classification`, and deterministic routing after the model decision.
+Use for: deterministic `if / elif` routing after a model decision is already known.
 
+### Official documentation — verify the tool-calling contract
+
+- [LangChain Reference: `BaseChatOpenAI.bind_tools`](https://reference.langchain.com/python/langchain-openai/chat_models/base/BaseChatOpenAI/bind_tools)
+
+Primary API reference for how tool definitions are bound to a chat model and how `tool_choice` constrains model selection.
+
+- [OpenAI Guide: Function calling](https://developers.openai.com/api/docs/guides/function-calling)
+
+Primary provider documentation for the model/tool interaction: tools expose application functionality to the model; the model can decide when and which tool to call unless the application constrains that choice.
+
+## Previous Slice 1 — Structured Output + Schema Validation
+
+- [Pinned source: `src/email_assistant/schemas.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/schemas.py)
+- [Pinned source: `src/email_assistant/email_assistant.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/email_assistant.py)
 - [Pinned source: `src/email_assistant/eval/evaluate_triage.py`](https://github.com/langchain-ai/agents-from-scratch/blob/603fc7a4ac6119004f43894395e504a1fefcc6c0/src/email_assistant/eval/evaluate_triage.py)
-
-This is the exact file behind the repository submodule. Use for: seeing why schema-valid output can still fail task evaluation.
-
-### Official documentation — use to verify contracts and semantics
-
 - [LangChain Reference: `BaseChatModel.with_structured_output`](https://reference.langchain.com/python/langchain-core/language_models/chat_models/BaseChatModel/with_structured_output)
-
-Primary API reference for the wrapper used by the pinned source. Use for: what the API accepts, how the schema is supplied, and what kind of object is returned.
-
 - [OpenAI Guide: Structured model outputs](https://developers.openai.com/api/docs/guides/structured-outputs)
-
-Primary provider documentation on schema adherence and its limits. Use for: verifying that structure conformance does not imply semantic correctness.
-
 - [Pydantic Documentation: Validators](https://docs.pydantic.dev/latest/concepts/validators/)
-
-Primary validation documentation. Use only when the project schema creates a real need for field/model-level constraints such as exact-vs-range pricing.
 
 ## Wisdom (Communities)
 
 - [LangChain Forum](https://forum.langchain.com/)
 
-Official community support venue. Use for: runtime behaviour, provider quirks, or cases where documentation and observed implementation behaviour diverge.
+Use only when primary documentation and pinned source do not explain an observed runtime behaviour.
 
 ## Gaps
 
-- Provider-specific structured-output differences are intentionally not researched yet because the current slice has not selected a final model/provider.
-- Advanced Pydantic features are intentionally not researched until the Creator Reply schema demonstrates a real need for them.
+- Slice 2 has not selected a real Campaign API/database; the first implementation should therefore use a thin lookup interface and deterministic fake/in-memory data in tests rather than inventing infrastructure.
+- RAG, dynamic Tool Registry, MCP, Memory, Redis and queues remain intentionally out of scope until a concrete requirement appears.
