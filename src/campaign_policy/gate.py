@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
+from typing import Any
+
 from creator_reply.schemas import CreatorReply, Delivery, Quote
 
+from .lookup import lookup_campaign_rules
 from .schemas import CampaignRules, PolicyDecision
 
 
@@ -169,3 +173,14 @@ def evaluate_policy(
         status=_final_status(statuses),
         reasons=reasons,
     )
+
+
+def evaluate_campaign_policy(
+    reply: CreatorReply,
+    campaign_id: str,
+    fetcher: Callable[[str], Mapping[str, Any] | CampaignRules | None],
+) -> PolicyDecision:
+    """Directly load rules for the known campaign and run the deterministic gate."""
+
+    rules = lookup_campaign_rules(campaign_id, fetcher)
+    return evaluate_policy(reply, rules)
