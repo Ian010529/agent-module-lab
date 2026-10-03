@@ -10,7 +10,7 @@ Creator Outreach / Reply Copilot
 
 当前步骤：
 
-**Own Design — Campaign Context lookup + deterministic Policy Gate**
+**Implementation + verification complete — Understanding Check pending**
 
 Slice 1 — Creator Reply Extraction 已完成并收口。
 
@@ -41,6 +41,7 @@ Slice 2 的目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 
   - `email_assistant_hitl.py`：LLM 在受控 Tool 集合中产生 `tool_calls`，程序执行或进入 HITL；
   - `email_assistant.py`：模型结果已知后由 deterministic `if / elif` 决定路由。
 - 已按 Slice 1 的 source-first 方式重做 `learning/lessons/0002-known-next-step-is-not-a-tool.html`：从 pinned `agents-from-scratch` 追踪 `@tool → get_tools → bind_tools → AIMessage.tool_calls → dispatch → invoke → observation → llm_call`，并与 deterministic triage routing 对照；对应 quick reference 为 `learning/reference/tool-calling-boundary.html`。
+- Slice 2 的 direct lookup / minimal CampaignRules / PolicyDecision 关键边界记录在 `docs/decisions/0002-campaign-rules-policy-gate.md`。
 
 ## Current technical focus
 
@@ -70,10 +71,13 @@ Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-
    - Quote v1 规则已锁定：`current_quote + exact` 直接比预算；range 全部在预算内/外可确定判断，跨预算走 `human_review`；`starting_from > budget` 为 `outside_policy`，否则 `human_review`；`usual_rate` 为 `missing_information`；`quote_basis=unclear` 或存在自然语言 `conditions` 时不强行确定化，走 `human_review`。
    - Delivery v1 规则已锁定：`delivery=None → missing_information`；exact/deadline 直接与 `latest_delivery_date` 比较；date range 全部在 deadline 内/外可确定判断，跨 deadline 走 `human_review`；approximate delivery 走 `human_review`。
    - Multi-quote v1 规则已锁定：`quotes=None → missing_information`；单个 quote 按 Quote v1 规则判断；多个 quotes 不自动选价或猜适用条件，直接 `human_review`。
-2. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
-3. **Implementation**：vibe coding 实现最薄 lookup interface 与 policy gate；不提前引入真实 Campaign 基础设施。
-4. **Verification**：优先 deterministic tests；需要语义判断的部分才单独设计 eval。
-5. **Understanding check**：能够解释当前设计、替代方案、failure boundary，以及什么时候应重新考虑 Agent Tool / 其他技术。
+2. **Tests first**：已完成 lookup failure、预算/币种、Quote amount types、delivery、multiple quotes、状态优先级和 boundary cases。
+3. **Implementation**：已完成 `src/campaign_policy/`：
+   - `schemas.py`：`CampaignRules / PolicyDecision`；
+   - `lookup.py`：已知 `campaign_id` 的 direct lookup + validation；
+   - `gate.py`：deterministic policy checks + `evaluate_campaign_policy` 主入口。
+4. **Verification**：从当前 GitHub 文件内容在隔离环境复现并运行 pytest，**46 passed**（Slice 2 新测试 + Slice 1 regressions）。
+5. **Understanding check**：当前唯一剩余步骤。需要能够解释当前设计、为什么不用 Agent Tool、status priority、lookup/gate failure boundary，以及什么条件出现时应重新设计。
 
 当前不引入 RAG、Memory、Multi-Agent、MCP、Tool Registry、Redis 或 Queue，除非 Slice 2 的实际需求证明必要。
 
