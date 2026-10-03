@@ -70,7 +70,7 @@ Learning gate 已通过，当前进入设计：
 - 外部 I/O 与 Agent Tool 不是同一个概念；普通函数也可以访问 API / DB。
 - Campaign Policy 与 Creator Reply 的明确规则比较应由 deterministic code 完成。
 - Lesson 0002 transfer gate 已通过：对于 `CreatorReply + campaign_id` 且 lookup 为固定 next step 的场景，整个 Agent Tool protocol 删除，直接调用 application function / API。
-- 用户已能列举适合 deterministic gate 的规则类型（allowed currency、required missingness、numeric threshold、enum/allowed-set membership）；`Policy Gate` 仍只有在自己的实现中落地并通过测试后才能进入 `PRACTICED`。
+- 用户已能列举适合 deterministic gate 的规则类型（allowed currency、required missingness、numeric threshold、enum/allowed-set membership）；`Policy Gate` 已在自己的实现中落地并通过测试，当前为 `PRACTICED`，是否进入 `CAN EXPLAIN` 取决于 Understanding Check。
 
 ## 技术状态更新原则
 
