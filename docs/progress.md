@@ -10,7 +10,7 @@ Creator Outreach / Reply Copilot
 
 当前步骤：
 
-**Technical foundation + reference trace — Lesson 0002: Tool Calling execution chain + direct-control boundary**
+**Own Design — Campaign Context lookup + deterministic Policy Gate**
 
 Slice 1 — Creator Reply Extraction 已完成并收口。
 
@@ -50,23 +50,26 @@ Slice 2 的目标是把已经提取出的 Creator Reply 与已知 `campaign_id` 
 
 - Schema Validation：已在自己的实现中实践并通过 deterministic tests。
 - Structured Output：已实现 `with_structured_output(CreatorReply)`，并完成真实模型验证。
-- 普通函数 vs Agent Tool：已有基础理解；当前通过 Lesson 0002 验证能否把边界迁移到 Campaign Context。
+- 普通函数 vs Agent Tool：Lesson 0002 learning gate 已通过；已能把 reference 的 Tool Loop 迁移到 Campaign Context，并判断已知 next step 应直接调用普通函数。
 - RAG vs Direct Lookup：当前边界是 known-ID 结构化 Campaign Policy 优先 direct lookup。
-- Policy Gate：尚未进入 own design / implementation。
+- Policy Gate：已理解 deterministic rule boundary，现进入 own design；尚未实现，因此仍未达到 PRACTICED。
 
-## Next step — Slice 2 learning gate
+## Next step — Slice 2 Own Design
 
-严格按 `docs/workspace-guide.md` 推进：
+Lesson 0002 learning gate 已通过，记录见 `learning/learning-records/0005-known-next-step-removes-tool-loop.md`。
 
-1. 完成 `learning/lessons/0002-known-next-step-is-not-a-tool.html`，能够解释 reference 的完整 Tool Calling execution chain。
-2. 在对话中完成 lesson 最后的 transfer：
-   - 从 `@tool` 到 observation 回到 `llm_call` 的完整链路；
-   - 对 `CreatorReply + campaign_id` 场景说明 Tool Loop 哪些部分需要保留、哪些应去掉以及原因；
-   - 区分适合 deterministic policy gate 与仍需语义判断的条件。
-3. 通过 learning gate 后，新增对应 `learning/learning-records/`；没有通过前不提前写 Slice 2 实现。
-4. **Own design**：定义最小 Campaign Policy 输入/输出、lookup interface、policy gate 状态和边界。
-5. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
-6. **Implementation + verification**：实现最薄 direct lookup interface 与 deterministic policy gate，并运行测试。
+严格按 `docs/workspace-guide.md` 继续：
+
+1. **Own design**：由项目需求定义最小 Campaign Rules / Policy Context，而不是从 reference 机械复制：
+   - 输入：`CreatorReply + campaign_id`；
+   - direct lookup interface：已知 next step，整个 Agent Tool protocol 删除；
+   - 最小 Campaign rules/context：只保留下游 gate 真正需要的业务规则；
+   - policy gate 输出：明确状态与 reasons；
+   - 明确 deterministic rules 与仍需 semantic judgment 的边界。
+2. **Tests first**：正常、缺 policy 信息、超预算、usage 超范围、币种不匹配。
+3. **Implementation**：vibe coding 实现最薄 lookup interface 与 policy gate；不提前引入真实 Campaign 基础设施。
+4. **Verification**：优先 deterministic tests；需要语义判断的部分才单独设计 eval。
+5. **Understanding check**：能够解释当前设计、替代方案、failure boundary，以及什么时候应重新考虑 Agent Tool / 其他技术。
 
 当前不引入 RAG、Memory、Multi-Agent、MCP、Tool Registry、Redis 或 Queue，除非 Slice 2 的实际需求证明必要。
 
